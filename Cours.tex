@@ -1,0 +1,354 @@
+% ==============================================================================
+% Fichier     : Cours.tex
+% Titre       : Hacking Éthique et Tests d'Intrusion
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
+% Institution : Université de Yaoundé I - Ecole Nationale Supérieure Polytechnique - Département de Génie Informatique — LIMSI
+% Année       : 2025-2026
+% Description : Fichier principal du cours. Orchestre tous les chapitres,
+%               la bibliographie et les éléments de couverture.
+% Compilateur : pdflatex + biber (ou lualatex recommandé)
+%               → lualatex Cours && biber Cours && lualatex Cours && lualatex Cours
+% ==============================================================================
+
+\documentclass[12pt, a4paper, twoside, openright]{book}
+
+% ==============================================================================
+% CHARGEMENT DE LA FEUILLE DE STYLE
+% ==============================================================================
+\usepackage{Style_cours}
+
+% ==============================================================================
+% BIBLIOGRAPHIE
+% ==============================================================================
+\addbibresource{bibliographie.bib}
+
+% ==============================================================================
+% MÉTADONNÉES PDF
+% ==============================================================================
+\hypersetup{
+    pdftitle  = {Hacking Éthique et Tests d'Intrusion},
+    pdfauthor = {MINKA MI NGUIDJOÏ Thierry Emmanuel},
+    pdfsubject= {Cours universitaire — Pentest, Cybersécurité offensive, OSINT},
+    pdfkeywords={Hacking Éthique, Pentest, OSCP, Metasploit, OSINT, Active Directory,
+                 Exploitation, Post-Exploitation, Université de Yaoundé I}
+}
+
+% ==============================================================================
+% DÉBUT DU DOCUMENT
+% ==============================================================================
+\begin{document}
+
+% ------------------------------------------------------------------------------
+% 1. PAGE DE TITRE (1ère DE COUVERTURE)
+% ------------------------------------------------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\pagecolor{CouleurPrimaire}
+
+\begin{tikzpicture}[remember picture, overlay]
+    % Bande dorée en bas
+    \fill[CouleurAccent]
+        (current page.south west) rectangle
+        ([yshift=2.2cm] current page.south east);
+    % Ligne décorative en haut
+    \fill[CouleurAccent]
+        ([yshift=-1.5cm] current page.north west) rectangle
+        ([yshift=-1.8cm] current page.north east);
+    % Éléments graphiques décoratifs
+    \fill[white, opacity=0.04]
+        ([xshift=8cm, yshift=-6cm] current page.north west)
+        -- ++(5,0) -- ++(0,-5) -- ++(-5,0) -- cycle;
+    \fill[white, opacity=0.06]
+        ([xshift=9cm, yshift=-7cm] current page.north west)
+        -- ++(6,0) -- ++(0,-6) -- ++(-6,0) -- cycle;
+    % Picto « terminal » décoratif (symbolise l'attaque)
+    \fill[red!60!black, opacity=0.12]
+        ([xshift=2cm, yshift=-3cm] current page.north west)
+        -- ++(3,0) -- ++(0,-1.5) -- ++(-3,0) -- cycle;
+\end{tikzpicture}
+
+\vspace*{1.5cm}
+
+\begin{center}
+    {\color{white!80!gray}\small\scshape
+        Université de Yaoundé~I~·~Département d'Informatique~·~LIMSI}\\[0.4ex]
+    {\color{CouleurAccent}\rule{0.55\linewidth}{0.8pt}}
+\end{center}
+
+\vspace{1.5cm}
+
+\begin{center}
+    {\color{CouleurAccent}\rule{0.7\linewidth}{1.2pt}}\\[1.2ex]
+    {\color{white}\large\bfseries MINKA MI NGUIDJOÏ Thierry Emmanuel}\\[0.4ex]
+    {\color{white!80!gray}\small
+        CISA~·~CISM~·~CGEIT~·~CRISC~·~CDPSE}\\[0.3ex]
+    {\color{white!70!gray}\footnotesize\itshape
+        Chercheur — LIMSI, Université de Yaoundé~I}\\[0.3ex]
+    {\color{white!70!gray}\footnotesize\itshape
+        Expert Judiciaire~—~Cadre supérieur, Contrôle Supérieur de l'État~—~Consultant International}\\[1.2ex]
+    {\color{CouleurAccent}\rule{0.7\linewidth}{1.2pt}}
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+    {\color{white!70!gray}\small
+        \ding{229}\quad Cas fil rouge : Mission Pentest LiZbiZ}\\[0.5ex]
+    {\color{white!70!gray}\small
+        \ding{44}\quad PTES~·~OSSTMM~·~NIST SP 800-115~·~OWASP Top 10}\\[0.5ex]
+    {\color{white!70!gray}\small
+        \ding{228}\quad OSINT~·~Exploitation~·~Post-Exploitation~·~Active Directory}
+\end{center}
+
+\vfill
+
+\begin{center}
+    {\color{CouleurAccent}\rule{0.7\linewidth}{1.2pt}}\\[1.2ex]
+    {\color{white}\large\bfseries MINKA MI NGUIDJOÏ Thierry Emmanuel}\\[0.4ex]
+    {\color{white!80!gray}\small
+        CISA~·~CISM~·~CGEIT~·~CRISC~·~CDPSE}\\[0.3ex]
+    {\color{white!70!gray}\footnotesize\itshape
+        Chercheur — LIMSI, Université de Yaoundé~I}\\[0.3ex]
+    {\color{white!70!gray}\footnotesize\itshape
+        RSSI — Projet GIP Bénin~·~Cadre supérieur, Contrôle Supérieur de l'État}\\[1.2ex]
+    {\color{CouleurAccent}\rule{0.7\linewidth}{1.2pt}}
+\end{center}
+
+\vspace{0.6cm}
+
+\begin{center}
+    {\color{white!60!gray}\small Année académique 2024--2025}
+\end{center}
+
+\afterpage{\nopagecolor}
+\end{titlepage}
+
+% ------------------------------------------------------------------------------
+% 2. PAGE DE DROITS / VERSO DE LA COUVERTURE
+% ------------------------------------------------------------------------------
+\clearpage
+\thispagestyle{empty}
+\vspace*{\fill}
+
+\begin{center}
+    \begin{minipage}{0.78\textwidth}
+        \footnotesize\color{CouleurBordInfo}
+        \begin{center}
+            {\bfseries\color{CouleurPrimaire}
+                Hacking Éthique et Tests d'Intrusion}\\[0.4ex]
+            {\itshape Méthodologie, Exploitation et Rapport Professionnel}
+        \end{center}
+        \vspace{0.8ex}
+        \hrule
+        \vspace{0.8ex}
+        \textbf{Auteur :} MINKA MI NGUIDJOÏ Thierry Emmanuel\\
+        \textbf{Institution :} Université de Yaoundé~I — LIMSI\\
+        \textbf{Année :} 2024--2025\\[0.5ex]
+        Ce document est un support de cours universitaire rédigé à des fins
+        pédagogiques. Toute reproduction partielle ou totale à des fins commerciales
+        est interdite sans l'autorisation écrite de l'auteur. Les techniques
+        présentées sont destinées exclusivement à des environnements de laboratoire
+        isolés ou à des systèmes faisant l'objet d'une autorisation explicite.\\[0.5ex]
+        Les certifications CISA, CISM, CGEIT, CRISC et CDPSE sont des marques
+        déposées de l'\textbf{ISACA}. OSCP est une marque déposée d'Offensive Security.\\[0.8ex]
+        \hrule
+        \vspace{0.5ex}
+        {\centering\itshape
+        «~Comprendre l'attaque est la condition nécessaire à une défense crédible.~»}
+    \end{minipage}
+\end{center}
+
+\vspace*{\fill}
+
+% ------------------------------------------------------------------------------
+% 3. DÉDICACE
+% ------------------------------------------------------------------------------
+\clearpage
+\thispagestyle{empty}
+\vspace*{3cm}
+\begin{flushright}
+    \begin{minipage}{0.62\textwidth}
+        \itshape\large\color{CouleurPrimaire}
+        À tous ceux qui comprennent que la sécurité\\
+        n'est pas un état, mais une vigilance permanente.\\[1.5ex]
+        \normalsize\normalfont\color{CouleurAccent}
+        Et à ceux qui font le choix courageux\\
+        d'utiliser leurs compétences offensives\\
+        au service de la protection, non de la destruction.
+    \end{minipage}
+\end{flushright}
+
+% ------------------------------------------------------------------------------
+% 4. REMERCIEMENTS
+% ------------------------------------------------------------------------------
+\clearpage
+\thispagestyle{empty}
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+La conception de ce cours est le produit d'une double expérience — celle du chercheur et celle du praticien. L'auteur remercie chaleureusement le \textbf{Professeur Flavien Serge Mani Onana} et le \textbf{Professeur Thomas Djotio Ndié} pour leur encadrement académique exigeant et leur confiance dans des travaux qui naviguent à l'intersection de la cryptographie, de la gouvernance et de la sécurité opérationnelle.
+
+Sa reconnaissance va également aux équipes des \textbf{Services du Contrôle Supérieur de l'État} et du \textbf{projet GIP Bénin}, dont les missions de terrain ont nourri les exemples concrets de ce cours. La confrontation régulière entre théorie et réalité institutionnelle est, pour l'enseignant, une école d'humilité et de précision.
+
+Enfin, ce cours n'existerait pas sans les étudiants qui ont accepté de se mesurer à des systèmes volontairement vulnérables, en apportant cette curiosité technique et cette rigueur éthique qui font les bons professionnels de la cybersécurité.
+
+% ------------------------------------------------------------------------------
+% 5. TABLE DES MATIÈRES
+% ------------------------------------------------------------------------------
+\clearpage
+\tableofcontents
+
+% ------------------------------------------------------------------------------
+% 6. LISTE DES FIGURES
+% ------------------------------------------------------------------------------
+\clearpage
+\listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+
+% ------------------------------------------------------------------------------
+% 7. LISTE DES TABLEAUX
+% ------------------------------------------------------------------------------
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+
+% ------------------------------------------------------------------------------
+% 8. LISTE DES CODES SOURCE
+% ------------------------------------------------------------------------------
+\lstlistoflistings
+\addcontentsline{toc}{chapter}{Liste des codes source}
+
+% ==============================================================================
+% CORPS DU COURS
+% ==============================================================================
+\mainmatter
+
+% --- Introduction Générale ---
+\input{chapitres/0_Introduction}
+
+% -------------------------------------------------------------------
+% PARTIE I — Cadre, Méthodologie et Reconnaissance
+% -------------------------------------------------------------------
+\part{Cadre, Méthodologie et Reconnaissance}
+
+% Chapitre 1 — Mandat et périmètre LiZbiZ
+\input{chapitres/01_mandat_lizbiz}
+
+% Chapitre 2 — Cadre juridique et méthodologies
+\input{chapitres/02_cadre_juridique}
+
+% Chapitre 3 — Reconnaissance passive et OSINT
+\input{chapitres/03_recon_osint}
+
+% Chapitre 4 — Scanning actif et énumération
+\input{chapitres/04_scanning_enum}
+
+% -------------------------------------------------------------------
+% PARTIE II — Phase Offensive : Exploitation et Post-Exploitation
+% -------------------------------------------------------------------
+\part{Phase Offensive : Exploitation et Post-Exploitation}
+
+% Chapitre 5 — Vulnérabilités et exploitation
+\input{chapitres/05_exploitation}
+
+% Chapitre 6 — Post-exploitation et mouvement latéral
+\input{chapitres/06_post_exploitation}
+
+% Chapitre 7 — Évasion des défenses et anti-forensics
+\input{chapitres/07_evasion_antiforensic}
+
+% -------------------------------------------------------------------
+% PARTIE III — Restitution et Évaluation
+% -------------------------------------------------------------------
+\part{Restitution Professionnelle et Évaluation}
+
+% Chapitre 8 — Rédaction du rapport de pentest
+\input{chapitres/08_reporting}
+
+% Chapitre 9 — Évaluation finale
+\input{chapitres/09_evaluation_finale}
+
+% --- Conclusion Générale ---
+\input{chapitres/00_Conclusion}
+
+% ==============================================================================
+% MATIÈRE POSTLIMINAIRE
+% ==============================================================================
+\backmatter
+
+% --- Bibliographie ---
+\clearpage
+\printbibliography[
+    heading=bibintoc,
+    title={Bibliographie et Références}
+]
+
+% --- À Propos de l'Auteur ---
+\clearpage
+\input{chapitres/Apropos_Auteur}
+
+% --- Index ---
+\clearpage
+\printindex
+\addcontentsline{toc}{chapter}{Index}
+
+% ==============================================================================
+% 4ÈME DE COUVERTURE
+% ==============================================================================
+\clearpage
+\thispagestyle{empty}
+\pagecolor{CouleurPrimaire}
+
+\begin{tikzpicture}[remember picture, overlay]
+    \fill[CouleurAccent]
+        (current page.south west) rectangle
+        ([yshift=1.8cm] current page.south east);
+    \fill[CouleurAccent]
+        ([yshift=-1.4cm] current page.north west) rectangle
+        ([yshift=-1.7cm] current page.north east);
+\end{tikzpicture}
+
+\vspace*{2.5cm}
+
+\begin{center}
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}\\[1.5ex]
+    {\color{white}\Large\bfseries À propos de ce cours}\\[1.5ex]
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+\begin{minipage}{0.75\textwidth}
+\color{white!85!gray}\setstretch{1.4}
+Ce cours propose une formation complète et opérationnelle au \textbf{hacking éthique} et aux \textbf{tests d'intrusion professionnels}. Articulé autour de la mission pentest de l'entreprise fictive LiZbiZ, il couvre l'intégralité de la chaîne offensive — de la reconnaissance OSINT jusqu'à la rédaction du rapport de restitution.
+
+\medskip
+
+Il s'adresse aux étudiants en cybersécurité, aux futurs RSSI et aux professionnels souhaitant acquérir une compréhension approfondie des techniques d'attaque pour mieux concevoir les défenses. Les méthodologies PTES, OSSTMM et NIST SP 800-115 encadrent l'ensemble de la démarche.
+
+\medskip
+
+Les thèmes abordés incluent : OSINT, scanning Nmap, injection SQL, Metasploit, escalade de privilèges Linux et Windows, mouvement latéral Active Directory, Mimikatz, Living Off The Land, anti-forensics, et scoring CVSS.
+\end{minipage}
+\end{center}
+
+\vfill
+
+\begin{center}
+    {\color{CouleurAccent}\rule{0.5\linewidth}{0.8pt}}\\[1ex]
+    {\color{white}\bfseries MINKA MI NGUIDJOÏ Thierry Emmanuel}\\[0.3ex]
+    {\color{white!75!gray}\footnotesize
+        CISA · CISM · CGEIT · CRISC · CDPSE}\\[0.3ex]
+    {\color{white!65!gray}\footnotesize\itshape
+        Chercheur — LIMSI, Université de Yaoundé~I · Cameroun}\\[1ex]
+    {\color{CouleurAccent}\rule{0.5\linewidth}{0.8pt}}
+\end{center}
+
+\vspace{1cm}
+
+\afterpage{\nopagecolor}
+
+\end{document}
+% ==============================================================================
+% Fin de Cours.tex
+% ==============================================================================
