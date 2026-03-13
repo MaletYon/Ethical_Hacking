@@ -1,0 +1,136 @@
+% ==============================================================================
+% Fichier : 08_reporting.tex
+% Description : Rédaction du Rapport de Pentest et Remédiation
+% ==============================================================================
+
+\chapter{Rédaction du Rapport de Pentest et Remédiation}
+
+La phase technique est terminée. La valeur ajoutée d'un Pentester ne réside pas dans le nombre de machines compromises, mais dans la qualité du rapport final. Ce document doit être compréhensible à la fois par les équipes techniques (pour corriger) et par la direction (pour arbitrer les budgets).
+
+\section{Structure du Rapport de Pentest}
+% ------------------------------------------------------------------------------
+
+Le rapport suit généralement une structure standard inspirée du PTES (Post-Exploitation Reporting).
+
+\subsection{1. Synthèse Exécutive (Executive Summary)}
+
+Cette section est destinée aux décideurs (PDG, DSI, RSSI). Elle tient souvent sur 1 à 2 pages.
+
+\begin{itemize}
+    \item \textbf{Contexte :} Rappel du périmètre et des dates.
+    \item \textbf{Statistiques :} Nombre de failles critiques, élevées, moyennes.
+    \item \textbf{Synthèse des risques majeurs :} "L'infrastructure est vulnérable à des attaques Ransomware en raison d'un manque de mises à jour critiques."
+    \item \textbf{Recommandations globales :} Plan d'action stratégique (ex: "Priorité absolue à la mise à jour de l'Active Directory").
+\end{itemize}
+
+\subsection{2. Méthodologie et Périmètre}
+
+Description technique de l'approche (Black Box, Gray Box), outils utilisés (Nmap, Metasploit, etc.), et liste précise des cibles testées (Adresses IP, URLs).
+
+\subsection{3. Résultats Techniques (Findings)}
+
+C'est le cœur du rapport. Chaque vulnérabilité découverte doit faire l'objet d'une fiche détaillée.
+
+\begin{enumerate}
+    \item \textbf{Titre de la vulnérabilité.}
+    \item \textbf{Score CVSS :} Indicateur de gravité (0 à 10).
+    \item \textbf{Description :} Explication technique de la faille.
+    \item \textbf{Preuve de concept (PoC) :} Captures d'écran, commandes utilisées, pour prouver que la faille est réelle.
+    \item \textbf{Impact Business :} Conséquences pour LiZbiZ (Vol de données, arrêt de l'activité, amende RGPD).
+    \item \textbf{Recommandations :} Comment corriger la faille (patch, configuration, code).
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+\section{Calcul de la Gravité : Le Score CVSS}
+% ------------------------------------------------------------------------------
+
+Le \textbf{CVSS (Common Vulnerability Scoring System)} est le standard pour noter la gravité des failles.
+
+\subsection{Échelle de Gravité}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Score} & \textbf{Niveau} \\
+    \midrule
+    0.0 & Information \\
+    0.1 - 3.9 & Faible (Low) \\
+    4.0 - 6.9 & Moyen (Medium) \\
+    7.0 - 8.9 & Élevé (High) \\
+    9.0 - 10.0 & Critique (Critical) \\
+    \bottomrule
+\end{tabular}
+\caption{Échelle CVSS}
+\end{table}
+
+\subsection{Critères d'évaluation}
+
+Le score dépend de plusieurs métriques :
+\begin{itemize}
+    \item \textbf{Vecteur d'attaque (AV) :} Réseau (Remote) ou Local (Local) ?
+    \item \textbf{Complexité (AC) :} Facile à exploiter (Low) ou difficile (High) ?
+    \item \textbf{Privilèges requis (PR) :} Besoin d'un compte admin ou rien (None) ?
+    \item \textbf{Impact (C/I/A) :} Impact sur la Confidentialité, Intégrité, Disponibilité.
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Exemple de Fiche de Vulnerabilité (Cas LiZbiZ)}
+% ------------------------------------------------------------------------------
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{|p{3cm}|p{10cm}|}
+    \hline
+    \textbf{Titre} & Injection SQL sur le formulaire de recherche \\
+    \hline
+    \textbf{Sévérité} & \textcolor{red}{\textbf{CRITIQUE (9.8)}} \\
+    \hline
+    \textbf{Cible} & http://www.lizbiz.com/search.php \\
+    \hline
+    \textbf{Description} & Le paramètre 'id' de la requête POST n'est pas filtré. Un attaquant peut injecter du code SQL arbitraire pour lire ou modifier la base de données. \\
+    \hline
+    \textbf{Preuve (PoC)} & Capture d'écran montrant l'extraction de la table 'users' via SQLMap. \\
+    \hline
+    \textbf{Impact} & Vol de tous les clients (RGPD), prise de contrôle du serveur web. \\
+    \hline
+    \textbf{Recommandation} & Utiliser des requêtes préparées (Prepared Statements) dans le code PHP. Ne jamais faire confiance aux entrées utilisateur. \\
+    \hline
+\end{tabular}
+\caption{Exemple de fiche de constat technique}
+\end{table}
+
+% ------------------------------------------------------------------------------
+\section{Remédiation et Plan d'Action}
+% ------------------------------------------------------------------------------
+
+Le rapport ne se contente pas de lister les problèmes, il propose des solutions.
+
+\subsection{Priorisation}
+
+Il est impossible de tout corriger en même temps. Le plan d'action doit suivre la logique du risque :
+\begin{enumerate}
+    \item \textbf{Critique :} Traitement immédiat (ex: serveur exposé à Internet sans mot de passe).
+    \item \textbf{Élevé :} Traitement sous 1 mois.
+    \item \textbf{Moyen/Faible :} Traitement lors de la prochaine mise à jour planifiée.
+\end{enumerate}
+
+\subsection{Correction vs Compensation}
+
+\begin{itemize}
+    \item \textbf{Correction :} Supprimer la faille à la source (ex: mettre à jour le logiciel).
+    \item \textbf{Compensation (Mitigation) :} Si la mise à jour est impossible, ajouter une barrière (ex: bloquer le port au pare-feu, ajouter une authentification forte).
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Livrable Final et Débriefing}
+% ------------------------------------------------------------------------------
+
+La mission se conclut par une réunion de restitution (Debrief).
+
+\begin{itemize}
+    \item Présentation orale des résultats.
+    \item Remise du rapport PDF signé.
+    \item Transmission des preuves (dans un format sécurisé) pour que l'équipe technique puisse reproduire les tests.
+\end{itemize}

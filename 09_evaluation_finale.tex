@@ -1,0 +1,334 @@
+% ==============================================================================
+% Fichier : 09_evaluation_finale.tex
+% Description : Évaluation Finale du cours de Hacking Éthique Avancé
+% ==============================================================================
+
+\chapter{Évaluation Finale du Cours}
+
+Cette évaluation valide l'acquisition des compétences avancées en hacking éthique, couvrant les aspects juridiques, méthodologiques, techniques (recon, exploitation, post-exploitation) et professionnels (reporting).
+
+% ------------------------------------------------------------------------------
+\section{Partie A : QCM (Choix Multiples)}
+% ------------------------------------------------------------------------------
+
+\textbf{Consigne :} Cochez la ou les bonnes réponses.
+
+\subsection*{Module 1 : Cadre Juridique et Méthodologique}
+\begin{enumerate}
+    \item En France, le cadre juridique principal encadrant les infractions informatiques est :
+    \begin{itemize}
+        \item[A.] Le RGPD
+        \item[B.] Le Code pénal (Articles 323-1 et suivants)
+        \item[C.] La loi Godfrain
+        \item[D.] La norme ISO 27001
+    \end{itemize}
+
+    \item Quelle méthodologie divise le pentest en 7 phases distinctes ?
+    \begin{itemize}
+        \item[A.] OSSTMM
+        \item[B.] PTES (Penetration Testing Execution Standard)
+        \item[C.] NIST SP 800-115
+        \item[D.] OWASP Testing Guide
+    \end{itemize}
+
+    \item Un test "Gray Box" signifie que :
+    \begin{itemize}
+        \item[A.] L'auditeur n'a aucune information préalable.
+        \item[B.] L'auditeur dispose d'informations partielles (ex: compte utilisateur standard).
+        \item[C.] L'auditeur a un accès complet (code source, configuration).
+        \item[D.] L'auditeur ne dispose que d'une adresse IP publique.
+    \end{itemize}
+
+    \item La règle des "Règles d'Engagement" (ROE) définit principalement :
+    \begin{itemize}
+        \item[A.] Le prix de la prestation
+        \item[B.] Les horaires et les actions interdites
+        \item[C.] La méthode de nettoyage des traces
+        \item[D.] La marque de café préférée du client
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Module 2 : Reconnaissance et OSINT}
+\begin{enumerate}
+    \setcounter{enumi}{4}
+    \item L'OSINT (Open Source Intelligence) se caractérise par :
+    \begin{itemize}
+        \item[A.] Une interaction directe avec les systèmes de la cible.
+        \item[B.] La collecte d'informations publiques sans contact direct.
+        \item[C.] L'utilisation exclusive d'outils de hacking.
+        \item[D.] Un scan de ports intrusif.
+    \end{itemize}
+
+    \item Quel outil est principalement utilisé pour recher des vulnérabilités sur des documents publics via Google ?
+    \begin{itemize}
+        \item[A.] Shodan
+        \item[B.] theHarvester
+        \item[C.] Google Dorks
+        \item[D.] Maltego
+    \end{itemize}
+
+    \item L'outil \texttt{Shodan} est utilisé pour :
+    \begin{itemize}
+        \item[A.] Scanner les ports locaux.
+        \item[B.] Découvrir les appareils connectés à Internet.
+        \item[C.] Cracker les mots de passe.
+        \item[D.] Analyser le code source.
+    \end{itemize}
+
+    \item La commande \texttt{dig axfr} sert à :
+    \begin{itemize}
+        \item[A.] Effectuer un transfert de zone DNS (Zone Transfer).
+        \item[B.] Scanner les ports TCP.
+        \item[C.] Faire du brute force.
+        \item[D.] Analyser les métadonnées d'une image.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Module 3 : Scanning et Énumération}
+\begin{enumerate}
+    \setcounter{enumi}{8}
+    \item Le scan "SYN Scan" (-sS) est qualifié de :
+    \begin{itemize}
+        \item[A.] Complet et bruyant (logs).
+        \item[B.] Furtif (demi-ouvert) et rapide.
+        \item[C.] Impossible à réaliser sous Linux.
+        \item[D.] Uniquement pour les protocoles UDP.
+    \end{itemize}
+
+    \item Dans Nmap, l'état "Filtered" signifie que :
+    \begin{itemize}
+        \item[A.] Le port est ouvert et une application écoute.
+        \item[B.] Le port est fermé.
+        \item[C.] Un pare-feu bloque l'accès.
+        \item[D.] L'hôte est éteint.
+    \end{itemize}
+
+    \item L'énumération SMB (ports 139/445) permet de découvrir :
+    \begin{itemize}
+        \item[A.] Des partages réseaux et des utilisateurs.
+        \item[B.] Des mots de passe en clair.
+        \item[C.] La version exacte du BIOS.
+        \item[D]. Les clés SSH.
+    \end{itemize}
+
+    \item L'outil \texttt{Dirb} est utilisé pour :
+    \begin{itemize}
+        \item[A.] Lancer des attaques DoS.
+        \item[B]. Découvrir des répertoires et fichiers cachés sur un serveur web.
+        \item[C.] Analyser le trafic réseau.
+        \item[D.] Bruteforcer des identifiants SSH.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Module 4 : Exploitation}
+\begin{enumerate}
+    \setcounter{enumi}{12}
+    \item Une injection SQL de type "Blind" signifie que :
+    \begin{itemize}
+        \item[A.] L'attaquant peut voir les données directement sur la page.
+        \item[B.] L'attaquant ne voit pas les données mais peut les déduire via des messages d'erreur ou le temps de réponse.
+        \item[C.] L'attaquant peut exécuter des commandes système.
+        \item[D.] L'attaquant peut écrire dans la base de données mais pas lire.
+    \end{itemize}
+
+    \item Quel outil est le standard pour l'exploitation de vulnérabilités ?
+    \begin{itemize}
+        \item[A.] Nmap
+        \item[B.] Metasploit Framework
+        \item[C.] Wireshark
+        \item[D.] Burp Suite
+    \end{itemize}
+
+    \item Un "Reverse Shell" fonctionne de la manière suivante :
+    \begin{itemize}
+        \item[A.] L'attaquant se connecte à la cible sur un port spécifique.
+        \item[B.] La cible se connecte à l'attaquant sur un port spécifique.
+        \item[C.] L'attaquant envoie un fichier à la cible.
+        \item[D.] La cible télécharge une mise à jour.
+    \end{itemize}
+
+    \item L'outil \texttt{SQLMap} est utilisé pour automatiser :
+    \begin{itemize}
+        \item[A.] Les scans de ports.
+        \item[B.] Les injections SQL.
+        \item[C.] Les attaques XSS.
+        \item[D.] L'énumération DNS.
+    \end{itemize}
+
+    \item Quelle est la différence entre LFI et RFI ?
+    \begin{itemize}
+        \item[A.] LFI est à distance, RFI est local.
+        \item[B.] LFI inclut des fichiers locaux, RFI inclut des fichiers distants.
+        \item[C.] LFI est pour Linux, RFI est pour Windows.
+        \item[D.] Il n'y a pas de différence.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Module 5 : Post-Exploitation et Mouvement Latéral}
+\begin{enumerate}
+    \setcounter{enumi}{17}
+    \item L'escalade de privilèges consiste à :
+    \begin{itemize}
+        \item[A.] Passer d'un compte standard à un compte administrateur/root.
+        \item[B.] Passer d'un serveur à un autre.
+        \item[C.] Changer le mot de passe d'un utilisateur.
+        \item[D.] Effacer les logs.
+    \end{itemize}
+
+    \item L'outil \texttt{Mimikatz} est célèbre pour :
+    \begin{itemize}
+        \item[A.] Scanner les vulnérabilités web.
+        \item[B.] Extraire les mots de passe et hashs de la mémoire Windows (LSASS).
+        \item[C.] Effectuer des scans de ports furtifs.
+        \item[D.] Analyser les fichiers PDF.
+    \end{itemize}
+
+    \item La technique "Pass-the-Hash" permet de :
+    \begin{itemize}
+        \item[A.] Craquer un hash pour trouver le mot de passe en clair.
+        \item[B.] S'authentifier en utilisant directement le hash du mot de passe.
+        \item[C.] Modifier le hash dans la base SAM.
+        \item[D.] Créer un nouvel utilisateur.
+    \end{itemize}
+
+    \item L'outil \texttt{BloodHound} sert à :
+    \begin{itemize}
+        \item[A.] Surveiller le trafic réseau en temps réel.
+        \item[B.] Visualiser les relations d'attaque dans un environnement Active Directory.
+        \item[C.] Détecter les malwares sur le disque.
+        \item[D.] Renforcer les pare-feu.
+    \end{itemize}
+
+    \item Le "Pivoting" consiste à :
+    \begin{itemize}
+        \item[A.] Tourner le disque dur pour un accès physique.
+        \item[B.] Utiliser une machine compromise pour attaquer un réseau inaccessible.
+        \item[C.] Retourner à la case de l'attaquant.
+        \item[D.] Changer d'adresse IP publique.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Module 6 : Évasion et Anti-Forensics}
+\begin{enumerate}
+    \setcounter{enumi}{22}
+    \item L'antivirus détecte généralement Mimikatz via :
+    \begin{itemize}
+        \item[A.] La détection comportementale.
+        \item[B.] La signature de fichier (statique).
+        \item[C.] L'analyse du disque dur exclusivement.
+        \item[D.] L'analyse du cache navigateur.
+    \end{itemize}
+
+    \item La technique "Living Off The Land" (LoL) implique d'utiliser :
+    \begin{itemize}
+        \item[A.] Des outils tiers téléchargés depuis GitHub.
+        \item[B.] Des outils légitimes du système (ex: Certutil, PowerShell) pour l'attaque.
+        \item[C.] Des outils payants.
+        \item[D.] Un live CD Linux.
+    \end{itemize}
+
+    \item Le but de l'obfuscation de code est de :
+    \begin{itemize}
+        \item[A.] Améliorer la lisibilité du code.
+        \item[B.] Rendre le code plus rapide.
+        \item[C.] Modifier le code pour éviter la détection par signature.
+        \item[D.] Compresser le code.
+    \end{itemize}
+
+    \item AMSI (Antimalware Scan Interface) est conçu pour :
+    \begin{itemize}
+        \item[A.] Bloquer les ports non utilisés.
+        \item[B.] Scanner le contenu des scripts (PowerShell, VBS) avant exécution.
+        \item[C.] Filtrer les emails.
+        \item[D.] Chiffrer le disque dur.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Module 7 : Rapport et Remédiation}
+\begin{enumerate}
+    \setcounter{enumi}{26}
+    \item La partie "Executive Summary" d'un rapport est destinée à :
+    \begin{itemize}
+        \item[A.] Les équipes techniques.
+        \item[B.] Les développeurs.
+        \item[C.] La direction (PDG, RSSI).
+        \item[D.] Le support client.
+    \end{itemize}
+
+    \item Le score CVSS mesure :
+    \begin{itemize}
+        \item[A.] Le coût financier d'une faille.
+        \item[B.] La gravité d'une vulnérabilité (de 0 à 10).
+        \item[C.] Le temps de correction.
+        \item[D.] La complexité du code.
+    \end{itemize}
+
+    \item Quelle est la meilleure pratique pour proposer une correction ?
+    \begin{itemize}
+        \item[A.] Corriger la faille immédiatement sans dire au client.
+        \item[B.] Proposer une compensation (ex: bloquer le port) si la mise à jour n'est pas possible.
+        \item[C.] Ignorer la faille si elle est difficile à exploiter.
+        \item[D.] Demander une augmentation de budget.
+    \end{itemize}
+
+    \item La preuve de concept (PoC) dans un rapport sert à :
+    \begin{itemize}
+        \item[A.] Prouver que l'attaquant n'a pas menti sur la compromission.
+        \item[B.] Montrer le code source de l'outil utilisé.
+        \item[C.] Faire de la publicité pour un outil.
+        \item[D.] Remplir des pages.
+    \end{itemize}
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+\section{Partie B : Vrai ou Faux}
+% ------------------------------------------------------------------------------
+
+\begin{enumerate}
+    \item \textbf{V/F} : Il est légal de scanner n'importe quel site web sans autorisation. \textbf{(Faux - Le scan actif nécessite une autorisation préalable)}
+    \item \textbf{V/F} : Le "SYN Scan" est plus furtif que le "Connect Scan". \textbf{(Vrai - Il n'établit pas la connexion complète)}
+    \item \textbf{V/F} : Une attaque "Black Box" signifie que l'attaquant a accès au code source. \textbf{(Faux - C'est "White Box")}
+    \item \textbf{V/F} : Le Pass-the-Hash fonctionne principalement avec le protocole Kerberos. \textbf{(Faux - C'est NTLM)}
+    \item \textbf{V/F} : L'injection SQL de type "Error Based" affiche des messages d'erreur SQL sur la page web. \textbf{(Vrai)}
+    \item \textbf{V/F} : L'outil \texttt{Hydra} est utilisé pour les injections SQL. \textbf{(Faux - Il sert au brute forcing de mots de passe)}
+    \item \textbf{V/F} : Le "Kernel Exploit" est une technique d'escalade de privilèges Linux. \textbf{(Vrai)}
+    \item \textbf{V/F} : Effacer les logs Windows (\texttt{wevtutil cl}) est une action silencieuse et indétectable. \textbf{(Faux - L'effacement crée un événement "Log Cleared")}
+    \item \textbf{V/F} : Le "Pivoting" permet d'accéder à des réseaux internes via une machine compromise en DMZ. \textbf{(Vrai)}
+    \item \textbf{V/F} : Un score CVSS de 2.0 indique une vulnérabilité critique. \textbf{(Faux - C'est faible. Critique est généralement > 9.0)}
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+\section{Partie C : Questions Ouvertes}
+% ------------------------------------------------------------------------------
+
+\begin{enumerate}
+    \item Expliquez la différence fondamentale entre un "Reverse Shell" et un "Bind Shell" en termes de connexion réseau et contournement de pare-feu.
+    \item Décrivez les 3 étapes de l'exploitation d'une injection SQL de type "Union Based" (Détection, Nombre de colonnes, Type de données).
+    \item Pourquoi l'utilisation d'outils légitimes ("Living Off The Land") est-elle plus difficile à détecter que le dépôt d'un exécutable externe (comme Mimikatz.exe) ?
+    \item Expliquez le concept de "Pivoting" et pourquoi il est nécessaire lors d'un pentest d'une architecture avec une DMZ et un LAN.
+    \item Quelle est la différence entre la détection statique (signature) et la détection comportementale (heuristique) dans un antivirus ?
+    \item Pourquoi est-il recommandé de ne pas éteindre un serveur compromis lors d'une investigation forensique ?
+    \item Expliquez ce qu'est le "Null Session" en énumération SMB et quel type d'information il permet de récupérer.
+    \item Définissez le concept de "Credential Dumping" et citez un outil majeur pour le réaliser sous Windows.
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+\section{Partie D : Cas Pratique - Capture The Flag}
+% ------------------------------------------------------------------------------
+
+\subsection{Scénario : Audit du Serveur Web de LiZbiZ}
+
+\begin{displayquote}
+Vous êtes connectés au réseau interne de LiZbiZ (Lab GNS3). On vous demande de compromettre le serveur Web interne (IP : 192.168.1.50) et de récupérer le fichier confidentiel stocké sur le serveur de fichiers interne.
+\end{displayquote}
+
+\textbf{Questions et tâches :}
+
+\begin{enumerate}
+    \item \textbf{Reconnaissance :} Utilisez \texttt{nmap} pour identifier le système d'exploitation et les services ouverts sur la cible (192.168.1.50). Quels sont les ports ouverts ?
+    \item \textbf{Énumération :} En utilisant un navigateur ou \texttt{curl}, identifiez le CMS utilisé (ex: WordPress). Quels fichiers/dossiers sensibles sont accessibles (Directory Busting) ?
+    \item \textbf{Exploitation :} Vous découvrez une page de login vulnérable. Proposez une attaque par injection SQL (ou brute force si simple) pour accéder au compte administrateur.
+    \item \textbf{Post-Exploitation :} Une fois connecté, comment obtenez-vous un shell sur le serveur ? (Indice : Web Shell ou exécution de commande).
+    \item \textbf{Élévation de Privilèges :} Vérifiez les permissions sudo ou les capacités du kernel. Comment passez-vous de l'utilisateur 'www-data' à 'root' ?
+    \item \textbf{Preuve :} Récupérez le contenu du fichier \texttt{/root/flag.txt}. Indiquez le hash contenu.
+\end{enumerate}

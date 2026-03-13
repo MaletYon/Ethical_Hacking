@@ -1,0 +1,90 @@
+% ==============================================================================
+% Fichier     : chapitres/00_Conclusion.tex
+% Titre       : Conclusion Générale — Cours de Hacking Éthique
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
+% ==============================================================================
+
+\chapter*{Conclusion Générale}
+\addcontentsline{toc}{chapter}{Conclusion Générale}
+\markboth{Conclusion Générale}{Conclusion Générale}
+
+\begin{flushright}
+    \itshape
+    <<~La sécurité n'est pas un produit, c'est un processus.~>>\\[0.5ex]
+    \small--- Bruce Schneier
+\end{flushright}
+
+\vspace{1.5ex}
+
+% ==============================================================================
+\section*{Ce que Vous Avez Appris}
+% ==============================================================================
+
+Au terme de ce parcours offensif, vous avez traversé l'intégralité de la chaîne d'attaque qui structure le métier de pentester — de la toute première requête DNS passive jusqu'à la remise du rapport contradictoire. Ce cheminement révèle une vérité fondamentale que seule la pratique peut enseigner : \textit{une infrastructure n'est jamais plus solide que son maillon le plus faible}, et ce maillon n'est presque jamais là où on l'attend.
+
+Vous avez compris que le hacking éthique n'est pas une collection de « tricks » techniques, mais une \textbf{discipline intellectuelle structurée} : observer avant d'agir, documenter chaque pas, mesurer l'impact réel avant de l'exposer, et toujours replacer la technique dans son contexte métier. La valeur d'un pentest se mesure moins au nombre de shells obtenus qu'à la clarté des recommandations transmises à la direction.
+
+% ==============================================================================
+\section*{Synthèse du Parcours d'Attaque LiZbiZ}
+% ==============================================================================
+
+\begin{boxresume}
+Le scénario LiZbiZ aura illustré, de bout en bout, un cycle d'attaque complet :
+
+\begin{enumerate}
+    \item \textbf{Reconnaissance OSINT} — Découverte des emails internes via Google Dork (\texttt{filetype:xls "employés"}) et de noms de comptes via les métadonnées d'un PDF public.
+    \item \textbf{Scanning actif} — Cartographie du réseau, détection d'un Apache 2.2.22 non patché (CVE critique) et d'un Windows Server 2012 R2 exposé sur le port 445.
+    \item \textbf{Exploitation} — Injection SQL sur le formulaire de connexion (\texttt{' OR '1'='1' --}) et exploitation EternalBlue (MS17-010) pour obtenir un shell SYSTEM.
+    \item \textbf{Post-exploitation} — Élévation de privilèges via \texttt{sudo vim}, dump des identifiants Mimikatz, Pass-the-Hash vers le Contrôleur de Domaine.
+    \item \textbf{Pivoting} — Traversée de la DMZ vers le LAN interne, compromission totale de l'Active Directory LiZbiZ.
+    \item \textbf{Rapport} — Restitution avec scoring CVSS, fiches de constat, plan de remédiation priorisé.
+\end{enumerate}
+\end{boxresume}
+
+% ==============================================================================
+\section*{Compétences Consolidées}
+% ==============================================================================
+
+Ce parcours aura forgé des compétences directement transférables en milieu professionnel :
+
+\begin{itemize}
+    \item La \textbf{rigueur méthodologique} (PTES, NIST SP 800-115) qui distingue le professionnel du script-kiddie.
+    \item La \textbf{conscience juridique} — savoir où s'arrête le mandat et où commence le délit.
+    \item La \textbf{capacité de communication} biface : technique pour les équipes \textit{Blue Team}, stratégique pour la direction.
+    \item La \textbf{réflexivité défensive} — comprendre l'attaque pour penser la contre-mesure.
+\end{itemize}
+
+% ==============================================================================
+\section*{La Complémentarité Audit / Pentest}
+% ==============================================================================
+
+Ce cours clôt une séquence pédagogique commencée avec l'Audit des SI. La complémentarité entre ces deux disciplines est profonde : l'audit évalue la \textit{conception} des contrôles, le pentest évalue leur \textit{résistance} en conditions réelles. L'un sans l'autre est incomplet. C'est précisément cette dualité — évaluer et tester — qui structure la pratique du \sigle{RSSI} contemporain.
+
+\begin{boxinfo}
+\textbf{Certifications recommandées pour aller plus loin :}
+\begin{itemize}
+    \item \textbf{OSCP} (\textit{Offensive Security Certified Professional}) — la référence mondiale du pentest technique.
+    \item \textbf{CEH} (\textit{Certified Ethical Hacker}, EC-Council) — largement reconnu en entreprise.
+    \item \textbf{GPEN} (GIAC Penetration Tester) — orienté méthodologie et reporting.
+    \item \textbf{CRTO} (\textit{Certified Red Team Operator}) — spécialisé Active Directory et C2.
+    \item \textbf{CISA / CISM} (ISACA) — pour ancrer la compétence offensive dans la gouvernance SI.
+\end{itemize}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Mot Final}
+% ==============================================================================
+
+Attaquer pour défendre est une posture intellectuellement exigeante. Elle requiert de comprendre les systèmes en profondeur, d'anticiper les erreurs humaines, de modéliser les comportements adverses — et de tout cela, d'extraire des recommandations utiles, honnêtes et actionnables.
+
+Le pentester professionnel est, en définitive, un \textbf{avocat du diable au service de la sécurité} : il incarne temporairement l'adversaire pour mieux armer l'organisation contre lui. Cette mission, lorsqu'elle est exercée avec rigueur et intégrité, est l'une des plus utiles que puisse remplir un expert en cybersécurité.
+
+\vspace{2ex}
+\begin{center}
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}\\[0.8ex]
+    {\small\itshape\color{CouleurPrimaire}
+        Rédigé avec la conviction que la maîtrise technique ne prend de sens\\
+        que lorsqu'elle est mise au service d'une éthique professionnelle irréprochable.}\\[0.5ex]
+    {\small\bfseries\color{CouleurPrimaire}\auteurcours}\\
+    {\footnotesize\color{CouleurBordInfo}\itshape\institutionprimaire{} --- \anneescolaire}
+\end{center}

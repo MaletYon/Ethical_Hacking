@@ -1,0 +1,104 @@
+% ==============================================================================
+% Fichier     : chapitres/0_Introduction.tex
+% Titre       : Introduction Générale — Cours de Hacking Éthique
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
+% ==============================================================================
+
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction Générale}
+\markboth{Introduction Générale}{Introduction Générale}
+
+\begin{flushright}
+    \itshape
+    <<~Connaître son ennemi mieux qu'il ne se connaît lui-même,\\
+    voilà la première condition de la victoire.~>>\\[0.5ex]
+    \small--- Sun Tzu, \textit{L'Art de la Guerre}
+\end{flushright}
+
+\vspace{1.5ex}
+
+% ==============================================================================
+\section*{Contexte et Pertinence du Cours}
+% ==============================================================================
+
+La cybersécurité offensive est aujourd'hui l'une des compétences les plus recherchées et les plus mal comprises de l'économie numérique. Confondre le hacker criminel avec le professionnel de la sécurité offensive, c'est confondre le cambrioleur avec l'expert en serrurerie mandaté pour tester les serrures d'une banque. La frontière n'est pas dans la technique — elle est dans le \textbf{mandat, la déontologie et la loi}.
+
+Ce cours de \termecle{Hacking Éthique} se positionne résolument du côté du professionnel : celui qui comprend l'art de l'attaque non pour nuire, mais pour renforcer les défenses. La maîtrise des techniques offensives est aujourd'hui indispensable à tout responsable de la sécurité des systèmes d'information (\sigle{RSSI}), auditeur certifié \sigle{CISA} ou consultant en \textit{penetration testing}.
+
+Ce cours s'inscrit également dans la continuité logique du cours d'Audit des Systèmes d'Information. Là où l'audit évalue les contrôles en place, le \termecle{test d'intrusion} (pentest) les met à l'épreuve du feu. Les deux disciplines sont complémentaires et partagent un même impératif éthique : l'indépendance, la rigueur et la confidentialité.
+
+% ==============================================================================
+\section*{Fil Conducteur : La Mission Pentest LiZbiZ}
+% ==============================================================================
+
+Fidèle à la pédagogie par l'immersion, ce cours retrouve l'entreprise \textbf{LiZbiZ} — déjà auditée dans le cours précédent. Cette fois, le PDG ne se contente plus d'une revue documentaire : il mandate une \textbf{simulation d'attaque réelle} (Black Box externe + Gray Box interne) pour évaluer la résistance de son SI face à un adversaire déterminé.
+
+Vous endosserez le rôle de \textbf{pentester} (testeur d'intrusion), évoluant dans un environnement de laboratoire isolé reproduisant fidèlement l'infrastructure LiZbiZ. De la reconnaissance passive initiale jusqu'à la rédaction du rapport de restitution, vous parcourrez l'intégralité de la chaîne d'attaque — toujours dans le cadre légal défini par les \textit{Rules of Engagement} (ROE).
+
+% ==============================================================================
+\section*{Objectifs Généraux du Cours}
+% ==============================================================================
+
+\begin{boxobjectifs}
+À l'issue de ce cours, l'étudiant sera capable de :
+\begin{enumerate}
+    \item \textbf{Maîtriser le cadre juridique} du hacking éthique (Code pénal, déontologie, ROE).
+    \item \textbf{Appliquer les méthodologies} reconnues : PTES, OSSTMM, NIST SP 800-115.
+    \item \textbf{Conduire une reconnaissance passive} (OSINT, Shodan, Google Dorks, métadonnées).
+    \item \textbf{Réaliser un scanning actif} (Nmap, énumération de services SMB/DNS/Web).
+    \item \textbf{Exploiter des vulnérabilités} (injection SQL, Metasploit, services réseaux).
+    \item \textbf{Mener la post-exploitation} (élévation de privilèges, mouvement latéral, Active Directory).
+    \item \textbf{Appliquer les techniques d'évasion} (obfuscation, Living Off The Land, anti-forensics).
+    \item \textbf{Rédiger un rapport de pentest} professionnel (Executive Summary, findings CVSS, remédiation).
+\end{enumerate}
+\end{boxobjectifs}
+
+% ==============================================================================
+\section*{Organisation du Cours}
+% ==============================================================================
+
+Le cours est structuré en trois parties progressives, de la définition du cadre légal à la restitution des résultats.
+
+\medskip
+\noindent\textbf{Partie I — Cadre, Méthodologie et Reconnaissance}
+
+Elle couvre le mandat de mission et le périmètre LiZbiZ (Chapitre~\ref{chap:mandat}), le cadre juridique et les méthodologies (Chapitre~\ref{chap:juridique}), la reconnaissance passive et l'OSINT (Chapitre~\ref{chap:osint}), et le scanning actif (Chapitre~\ref{chap:scanning}).
+
+\medskip
+\noindent\textbf{Partie II — Phase Offensive : Exploitation et Post-Exploitation}
+
+Elle traite des vulnérabilités et de leur exploitation (Chapitre~\ref{chap:exploit}), de la post-exploitation et du mouvement latéral (Chapitre~\ref{chap:postexploit}), et des techniques d'évasion et d'anti-forensics (Chapitre~\ref{chap:evasion}).
+
+\medskip
+\noindent\textbf{Partie III — Restitution et Évaluation}
+
+Elle présente la rédaction du rapport de pentest (Chapitre~\ref{chap:reporting}) et l'évaluation finale de synthèse (Chapitre~\ref{chap:evaluation}).
+
+% ==============================================================================
+\section*{Avertissement Éthique et Légal}
+% ==============================================================================
+
+\begin{boxalert}
+\textbf{Avertissement important :}
+Les techniques présentées dans ce cours sont destinées exclusivement à être utilisées dans des environnements de laboratoire isolés ou sur des systèmes pour lesquels vous disposez d'une \textbf{autorisation écrite et explicite}. L'application de ces techniques sur tout système tiers sans autorisation constitue une \textbf{infraction pénale} passible de poursuites judiciaires. L'auteur et l'institution déclinent toute responsabilité en cas d'utilisation illégale ou malveillante des connaissances transmises.
+\end{boxalert}
+
+\begin{boxinfo}
+\textbf{Prérequis recommandés :}
+\begin{itemize}
+    \item Connaissance des protocoles réseau (TCP/IP, DNS, HTTP, SMB).
+    \item Bases du système Linux (navigation en ligne de commande, droits, scripts).
+    \item Connaissance de l'environnement Windows (Active Directory, Registre, Services).
+    \item Notions de programmation (Python, Bash) appréciées.
+    \item Cours d'Audit des SI recommandé en préalable.
+\end{itemize}
+\end{boxinfo}
+
+\vspace{2ex}
+\begin{center}
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}\\[0.8ex]
+    {\small\itshape\color{CouleurPrimaire}
+        Ce cours a été conçu avec la conviction que comprendre l'attaque\\
+        est la condition nécessaire à une défense crédible.}\\[0.5ex]
+    {\small\bfseries\color{CouleurPrimaire}\auteurcours}
+\end{center}

@@ -1,0 +1,147 @@
+% ==============================================================================
+% Fichier : 04_scanning_enum.tex
+% Description : Scanning Actif et Énumération de Services
+% ==============================================================================
+
+\chapter{Scanning Actif et Énumération de Services}
+
+La phase de Reconnaissance Passive (OSINT) est terminée. Nous entrons maintenant dans la phase de \textbf{Scanning}, qui est une composante de la reconnaissance active. Contrairement à l'OSINT, le scanning génère du trafic réseau vers la cible et est donc détectable par les systèmes de sécurité (Firewalls, IDS/IPS).
+
+\section{Objectifs du Scanning}
+% ------------------------------------------------------------------------------
+
+Le but est de dresser une carte précise du réseau cible :
+\begin{itemize}
+    \item \textbf{Discovery :} Quelles machines sont allumées et joignables ?
+    \item \textbf{Port Scanning :} Quels ports (portes) sont ouverts sur ces machines ?
+    \item \textbf{Service Detection :} Quels services (applications) tournent derrière ces ports ?
+    \item \textbf{OS Fingerprinting :} Quel système d'exploitation est utilisé (Windows, Linux) ?
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Découverte d'Hôtes (Host Discovery)}
+% ------------------------------------------------------------------------------
+
+Avant de scanner les ports, il faut savoir qui est vivant sur le réseau.
+
+\subsection{Protocoles de Ping}
+
+Nmap envoie des sondes pour voir si l'hôte répond.
+\begin{itemize}
+    \item \textbf{ICMP Echo Request :} Le "Ping" classique (souvent bloqué par les pare-feux).
+    \item \textbf{ARP Scan :} Utilise les requêtes ARP (Adresse Resolution Protocol). Très efficace sur le réseau local (LAN), impossible via Internet.
+    \item \textbf{TCP SYN Ping :} Envoie un paquet TCP vide sur un port courant (ex: 80). Si on reçoit un SYN/ACK ou RST, l'hôte est vivant.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption=Scan de découverte réseau avec Nmap]
+# Scan ARP pour tout le sous-reseau (Rapide et fiable en LAN)
+nmap -sn 192.168.1.0/24
+# -sn : Ping scan (pas de scan de ports)
+\end{lstlisting}
+
+% ------------------------------------------------------------------------------
+\section{Scan de Ports : La Technique Reine}
+% ------------------------------------------------------------------------------
+
+C'est le cœur du métier du pentester. Il existe plusieurs techniques selon le niveau de furtivité requis.
+
+\subsection{Types de Scans TCP}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{p{3cm}p{4cm}p{5cm}}
+    \toprule
+    \textbf{Type} & \textbf{Mécanisme} & \textbf{Avantages/Inconvénients} \\
+    \midrule
+    \textbf{TCP Connect (-sT)} & Établit une connexion complète (3-way handshake). & Bruyant (logs évidents), pas besoin d'être root. \\
+    \textbf{SYN Scan (-sS)} & Envoie SYN, attend SYN/ACK, envoie RST (interrompt la connexion). & Furtif (demi-ouvert), rapide, nécessite les droits root. \\
+    \textbf{UDP Scan (-sU)} & Envoie des paquets UDP vides. & Très lent, souvent filtré, nécessaire pour DNS/DHCP. \\
+    \bottomrule
+\end{tabular}
+\caption{Comparatif des types de scans}
+\end{table}
+
+\subsection{Les États des Ports}
+
+Nmap classifie les ports en 6 états :
+\begin{enumerate}
+    \item \textbf{Open :} Une application accepte les connexions (Cible potentielle !).
+    \item \textbf{Closed :} Le port est accessible mais aucune application n'écoute.
+    \item \textbf{Filtered :} Un pare-feu bloque l'accès (impossible de savoir si ouvert ou fermé).
+    \item \textbf{Unfiltered :} Accessible mais impossible de déterminer l'état.
+\end{enumerate}
+
+\subsection{Commandes Essentielles Nmap}
+
+\begin{lstlisting}[language=bash, caption=Scan SYN rapide des ports les plus courants]
+nmap -sS -T4 --top-ports 100 192.168.1.10
+# -sS : SYN Scan (Stealth)
+# -T4 : Template de timing (Rapide)
+# --top-ports 100 : Scan les 100 ports les plus communs
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, caption=Détection de version et OS]
+nmap -sV -O 192.168.1.10
+# -sV : Interroge le service pour connaitre sa version (Apache 2.4.x...)
+# -O : Detection d'OS (Linux Kernel 3.x, Windows 10...)
+\end{lstlisting}
+
+% ------------------------------------------------------------------------------
+\section{Énumération de Services}
+% ------------------------------------------------------------------------------
+
+Une fois les ports ouverts identifiés, il faut "discuter" avec les services pour obtenir plus d'informations (Utilisateurs, Configurations, Partages).
+
+\subsection{Énumération Web (Port 80/443/8080)}
+
+Il faut découvrir les dossiers et fichiers cachés.
+
+\begin{lstlisting}[language=bash, caption=Directory Busting avec Dirb]
+dirb http://lizbiz.local /usr/share/wordlists/dirb/common.txt
+# Essaie des milliers de chemins ( /admin, /backup, /config )
+\end{lstlisting}
+
+\begin{boxlizbiz}
+\textbf{Découverte LiZbiZ :}
+Le scan \texttt{dirb} révèle un répertoire \texttt{/backup/} accessible. À l'intérieur, un fichier \texttt{old\_passwd.txt} contenant des identifiants obsolètes.
+\end{boxlizbiz}
+
+\subsection{Énumération SMB (Ports 139/445)}
+
+Le protocole SMB (Server Message Block) de Windows est tristement célèbre pour ses fuites d'informations.
+
+\begin{lstlisting}[language=bash, caption=Enumération SMB avec Nmap NSE]
+nmap --script=smb-enum-shares,smb-enum-users -p445 192.168.1.20
+# Utilise les scripts NSE (Nmap Scripting Engine)
+\end{lstlisting}
+
+\textbf{Risques courants :}
+\begin{itemize}
+    \item \textbf{Null Session :} Connexion anonyme sans mot de passe.
+    \item \textbf{Partages sensibles :} Accès en lecture à des dossiers contenant des données stratégiques.
+\end{itemize}
+
+\subsection{Énumération DNS (Port 53)}
+
+Si le serveur DNS est mal configuré, on peut lui demander de lister tous les hôtes du domaine (Zone Transfer).
+
+\begin{lstlisting}[language=bash]
+dig axfr @ns1.lizbiz.com lizbiz.com
+# Tente un transfert de zone pour recuperer tous les noms DNS internes
+\end{lstlisting}
+
+% ------------------------------------------------------------------------------
+\section{Scan de Vulnérabilités Automatisé}
+% ------------------------------------------------------------------------------
+
+Pour gagner du temps, on croise les services découverts avec des bases de données de failles connues (CVE).
+
+\subsection{Nessus / OpenVAS}
+
+Ces scanners envoient des sondes spécifiques pour détecter si un service est vulnérable (ex: "Ce serveur Apache est-il affecté par la faille Shellshock ?").
+
+\begin{boxlizbiz}
+\textbf{Résultat Scan LiZbiZ :}
+Le scanner Nessus signale que le serveur Web (Port 80) tourne sous Apache 2.2.22, qui est vulnérable à plusieurs CVEs permettant l'exécution de code à distance (RCE). C'est une entrée majeure pour la phase d'Exploitation.
+\end{boxlizbiz}

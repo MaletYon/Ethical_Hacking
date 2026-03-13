@@ -1,0 +1,146 @@
+% ==============================================================================
+% Fichier : 03_recon_osint.tex
+% Description : Reconnaissance Passive et OSINT
+% ==============================================================================
+
+\chapter{Reconnaissance Passive et OSINT}
+
+La première règle du hacking est : "Connaître sa cible". Avant de lancer la moindre attaque technique, le hacker éthique collecte un maximum d'informations. Cette phase, appelée \textbf{Reconnaissance Passive}, a l'avantage d'être totalement invisible pour la cible (pas de paquets envoyés directement vers son réseau).
+
+\section{Définition et Objectifs}
+% ------------------------------------------------------------------------------
+
+\subsection{OSINT (Open Source Intelligence)}
+
+\begin{boxdef}
+\textbf{OSINT :} Renseignement d'origine sources ouvertes. Il s'agit de collecter, analyser et exploiter des informations disponibles publiquement (Internet, médias, documents publics).
+\end{boxdef}
+
+\subsection{Objectifs de la Reconnaissance}
+
+\begin{itemize}
+    \item Identifier les \textbf{domaines} et sous-domaines appartenant à la cible.
+    \item Découvrir les \textbf{adresses IP} publiques et les plages réseau.
+    \item Identifier les \textbf{technologies} utilisées (Web Server, CMS, Cloud Provider).
+    \item Trouver des \textbf{adresses email} et des \textbf{noms d'employés} (pour le Phishing ou le Brute Force).
+    \item Découvrir des \textbf{fuites de données} (mots de passe passés, documents internes).
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Techniques et Outils de Collecte}
+% ------------------------------------------------------------------------------
+
+\subsection{Collecte d'Infrastructure}
+
+\subsubsection{Whois et Registres}
+Le protocole Whois permet d'interroger les bases de données des registraires de noms de domaine pour obtenir des informations sur le propriétaire.
+
+\begin{lstlisting}[language=bash, caption=Requete Whois]
+whois lizbiz.com
+# Revele : Nom de l'administrateur, contacts techniques, 
+# date de creation, et surtout le fournisseur d'acces (ISP).
+\end{lstlisting}
+
+\subsubsection{DNS Enumeration}
+Le DNS (Domain Name System) est l'annuaire du web. Il contient des enregistrements précieux.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Type} & \textbf{Information révélée} \\
+    \midrule
+    A & Adresse IPv4 d'un hôte. \\
+    MX & Serveurs de messagerie (Cibles privilégiées pour le phishing). \\
+    TXT & Informations diverses (vérification propriété, SPF). \\
+    NS & Serveurs de noms (DNS Primaire/Secondaire). \\
+    \bottomrule
+\end{tabular}
+\caption{Enregistrements DNS critiques}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{TP LiZbiZ :} Utilisez l'outil \texttt{dig} ou \texttt{nslookup} pour trouver l'adresse IP du serveur web de LiZbiZ et son serveur de messagerie.
+\begin{lstlisting}[language=bash]
+dig lizbiz.com ANY
+\end{lstlisting}
+\end{boxlizbiz}
+
+\subsection{Moteurs de Recherche Spécialisés}
+
+\subsubsection{Shodan : Le Moteur de Recherche des Objets Connectés}
+Shodan scanne Internet en permanence et indexe les services (bannières) qu'il trouve.
+
+\textbf{Recherche typique :}
+\begin{itemize}
+    \item \texttt{hostname:"lizbiz.com"} : Tous les services liés au domaine.
+    \item \texttt{port:3389} : Recherche de bureaux à distance (RDP) exposés.
+    \item \texttt{product:"Apache Tomcat"} : Recherche de versions vulnérables.
+\end{itemize}
+
+\subsubsection{Google Dorks (Google Hacking)}
+Utilisation des opérateurs avancés de Google pour trouver des informations cachées.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{p{4cm}p{6cm}}
+    \toprule
+    \textbf{Opérateur} & \textbf{Exemple et Usage} \\
+    \midrule
+    \texttt{site:} & \texttt{site:lizbiz.com} (Limiter la recherche au site cible). \\
+    \texttt{filetype:} & \texttt{filetype:pdf "confidentiel"} (Chercher des docs PDF sensibles). \\
+    \texttt{inurl:} & \texttt{inurl:admin} (Chercher des pages d'administration). \\
+    \texttt{intitle:} & \texttt{intitle:"index of /"} (Trouver des répertoires ouverts). \\
+    \texttt{cache:} & Voir une version supprimée d'une page (Cache Google). \\
+    \bottomrule
+\end{tabular}
+\caption{Opérateurs Google Dorks principaux}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{Cas LiZbiZ :}
+Un \texttt{Google Dork} révèle un fichier Excel indexé par erreur : \texttt{site:lizbiz.com filetype:xls "employés"}. Ce fichier contient la liste des emails internes, fournissant une base parfaite pour une campagne de Phishing ultérieure.
+\end{boxlizbiz}
+
+\subsection{Collecte d'Informations Humaines (Social Engineering Prep)}
+
+\subsubsection{LinkedIn Scraping}
+Les réseaux sociaux sont une mine d'or. LinkedIn révèle :
+\begin{itemize}
+    \item Les administrateurs système (cibles privilégiées).
+    \item Les technologies utilisées (ex: "Administrateur Windows Server 2019 chez LiZbiZ").
+    \item La structure hiérarchique.
+\end{itemize}
+
+\subsubsection{theHarvester}
+Outil automatisé pour collecter emails, sous-domaines et noms d'hôtes à partir de multiples sources publiques.
+
+\begin{lstlisting}[language=bash, caption=Utilisation de theHarvester]
+theharvester -d lizbiz.com -l 500 -b google,linkedin
+# -d : domaine
+# -l : limite de resultats
+# -b : source (moteur de recherche)
+\end{lstlisting}
+
+% ------------------------------------------------------------------------------
+\section{Analyse de Métadonnées}
+% ------------------------------------------------------------------------------
+
+Les documents publics (PDF, Word, Images) publiés sur le site web contiennent souvent des métadonnées invisibles.
+
+\subsection{ExifTool}
+\begin{boxdef}
+\textbf{Métadonnées :} Données cachées dans un fichier (Auteur, Logiciel utilisé, Date de création, Chemin du fichier source).
+\end{boxdef}
+
+\begin{boxlizbiz}
+\textbf{Analyse LiZbiZ :}
+Téléchargez le document "Rapport Annuel LiZbiZ.pdf". Utilisez \texttt{exiftool} pour l'analyser.
+\begin{lstlisting}[language=bash]
+exiftool rapport_lizbiz.pdf
+# Resultat : "Creator Tool: Microsoft Word 2016", 
+# "Author: Admin-IT". 
+# Indice : Le compte "Admin-IT" existe probablement.
+\end{lstlisting}
+\end{boxlizbiz}

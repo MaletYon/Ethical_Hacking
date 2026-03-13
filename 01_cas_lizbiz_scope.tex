@@ -1,0 +1,135 @@
+% ==============================================================================
+% Fichier : 01_cas_lizbiz_scope.tex
+% Description : Présentation du Cas Pratique et Règles d'Engagement (Scope)
+% ==============================================================================
+
+\chapter{Cas Pratique : Mandat de Pentest LiZbiZ}
+
+Ce chapitre définit le cadre opérationnel et juridique de la mission de simulation d'attaque (Pentest) commanditée par l'entreprise LiZbiZ. Il servira de référence tout au long du cours pour justifier les actions techniques réalisées.
+
+\section{Contexte de la Mission}
+% ------------------------------------------------------------------------------
+
+\subsection{Origine de la Demande}
+
+Suite aux audits de sécurité réalisés précédemment (Cours d'Audit des SI), la direction de LiZbiZ a mis en place plusieurs mesures correctives. Cependant, le PDG souhaite aller plus loin qu'une simple revue documentaire.
+
+\begin{boxlizbiz}
+\textbf{Mandat :}
+Le PDG de LiZbiZ souhaite évaluer la résilience réelle de son Système d'Information face à une attaque ciblée. Il a donc mandaté votre cabinet pour réaliser un \textbf{Pentest Externe} (Black Box) et un \textbf{Pentest Interne} (Gray Box).
+\end{boxlizbiz}
+
+\subsection{Objectifs}
+
+\begin{itemize}
+    \item \textbf{Identifier les failles exploitables :} Détecter les vulnérabilités techniques et logiques non corrigées.
+    \item \textbf{Tester la réactivité :} Vérifier si l'équipe technique détecte l'intrusion (Blue Team).
+    \item \textbf{Accéder aux données critiques :} Tenter d'exfiltrer la base de données clients (Preuve de concept).
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Périmètre d'Intervention (Scope)}
+% ------------------------------------------------------------------------------
+
+La notion de périmètre est vitale. Hors périmètre, toute action est illégale.
+
+\subsection{Cibles Autorisées (In-Scope)}
+
+L'adresse IP publique et les systèmes internes suivants sont mis à disposition pour l'attaque :
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Cible} & \textbf{Type} & \textbf{Adresse/IP (Lab)} \\
+    \midrule
+    www.lizbiz.com & Serveur Web (DMZ) & 203.0.113.10 (Simulée) \\
+    Intranet LiZbiZ & Portail Employé & 192.168.10.50 \\
+    Contrôleur de Domaine & Active Directory & 192.168.10.5 \\
+    Postes Utilisateurs & Windows 10 & 192.168.10.100 - 200 \\
+    \bottomrule
+\end{tabular}
+\caption{Liste des cibles autorisées}
+\end{table}
+
+\subsection{Interdictions (Out-of-Scope)}
+
+Certaines actions sont strictement interdites car trop risquées pour la continuité de l'activité.
+
+\begin{boxalert}
+\textbf{Actions Interdites sous peine de poursuites :}
+\begin{itemize}
+    \item \textbf{Attaques DoS/DDoS :} Saturation de la bande passante ou des services (Risque de coupure business).
+    \item \textbf{Social Engineering ciblé :} Pas d'hameçonnage ciblé sur le PDG ou les membres du COMEX (non autorisés).
+    \item \textbf{Destruction de données :} Toute modification, suppression ou chiffrement de données (Ransomware simulé uniquement).
+    \item \textbf{Accès aux systèmes de paiement bancaire :} Cible trop sensible réglementairement (PCI-DSS).
+\end{itemize}
+\end{boxalert}
+
+% ------------------------------------------------------------------------------
+\section{Règles d'Engagement (ROE - Rules of Engagement)}
+% ------------------------------------------------------------------------------
+
+Ces règles définissent "comment" l'attaque doit être menée.
+
+\subsection{Fenêtre Temporelle}
+
+\begin{itemize}
+    \item \textbf{Début de mission :} Lundi 09h00.
+    \item \textbf{Fin de mission :} Vendredi 18h00.
+    \item \textbf{Plages horaires :} Attaques lourdes autorisées uniquement entre 19h00 et 07h00 pour limiter l'impact utilisateur (sauf si approche furtive souhaitée).
+\end{itemize}
+
+\subsection{Gestion des Preuves}
+
+\begin{itemize}
+    \item Toutes les actions doivent être journalisées (Logs) et horodatées.
+    \item Toute exfiltration de données doit être simulée par des fichiers "flag" (ex: fichier \texttt{flag.txt} contenant un hash) ou limitée à quelques enregistrements anonymisés.
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Environnement de Laboratoire (Immersion)}
+% ------------------------------------------------------------------------------
+
+Pour réaliser ce TP en toute sécurité, nous travaillerons sur un environnement isolé (Lab).
+
+\subsection{Architecture du Lab}
+
+L'infrastructure est reproduite sous GNS3 ou EVE-NG :
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    box/.style={rectangle, draw, thick, fill=white, minimum width=2cm, minimum height=1cm, align=center}
+]
+    % Nodes
+    \node[box, fill=red!20] (attacker) {Attaquant\\(Kali Linux)};
+    \node[box, fill=gray!20, right=of attacker] (fw) {Firewall\\(pfSense)};
+    \node[box, fill=blue!20, above right=of fw] (web) {DMZ\\(Web Server)};
+    \node[box, fill=green!20, below right=of fw] (ad) {LAN\\(AD + Postes)};
+    
+    % Connections
+    \draw[->, thick] (attacker) -- (fw);
+    \draw[->, thick] (fw) -- (web);
+    \draw[->, thick] (fw) -- (ad);
+\end{tikzpicture}
+\caption{Topologie simplifiée du Lab LiZbiZ}
+\end{figure}
+
+\subsection{Configuration Requise}
+
+\begin{itemize}
+    \item \textbf{Machine d'Attaque :} Kali Linux 2023.x (VM).
+    \item \textbf{Cibles :} Machines Virtuelles (Windows Server 2019, Ubuntu Server, Windows 10).
+    \item \textbf{Réseau :} Isolation totale de l'Internet réel (Mode "Host-Only" ou Réseau interne).
+\end{itemize}
+
+\subsection{Livrables de la Mission}
+
+À la fin du cours, l'étudiant doit fournir :
+\begin{enumerate}
+    \item Un \textbf{Rapport de Pentest} complet (Exécutif + Technique).
+    \item Un fichier \textbf{Proof of Concept (PoC)} montrant les exploits utilisés.
+    \item Les \textbf{Flags} récupérés (Preuves de compromission).
+\end{enumerate}

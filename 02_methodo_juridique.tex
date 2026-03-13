@@ -1,0 +1,115 @@
+% ==============================================================================
+% Fichier : 02_methodo_juridique.tex
+% Description : Cadre Juridique et Méthodologies de Tests d'Intrusion
+% ==============================================================================
+
+\chapter{Cadre Juridique et Méthodologies de Tests d'Intrusion}
+
+Le Hacking Éthique n'est pas une absence de règles, mais une pratique strictement encadrée. Ce chapitre détaille les limites légales à ne jamais franchir et les standards méthodologiques à suivre pour garantir la qualité d'une mission.
+
+\section{Le Cadre Juridique (Loi et Déontologie)}
+% ------------------------------------------------------------------------------
+
+\subsection{La Loi Informatique et Libertés (France)}
+
+En France, le cadre légal principal est défini par le Code pénal (Articles 323-1 à 323-7), souvent appelé "Loi Godfrain".
+
+\begin{boxalert}
+\textbf{Attention :} Sans autorisation écrite préalable, toute intrusion, même sans malveillance, est un délit passible de 2 ans d'emprisonnement et 30 000€ d'amende (jusqu'à 5 ans et 150 000€ si accés à des données traitées automatiquement).
+\end{boxalert}
+
+\subsection{Les Trois Conditions de Légalité}
+
+Pour qu'un test d'intrusion soit légal, trois conditions cumulatives doivent être remplies :
+\begin{enumerate}
+    \item \textbf{Autorisation Expresse :} Un document écrit (Contrat, Lettre de mission) signé par le propriétaire du système ou son mandataire.
+    \item \textbf{Définition du Périmètre :} L'autorisation doit spécifier quelles machines, plages IP ou applications sont testées. "Tester tout le réseau" est trop vague et dangereux juridiquement.
+    \item \textbf{Respect des Règles d'Engagement :} Respecter les horaires, les méthodes interdites (DoS) et les cibles exclues.
+\end{enumerate}
+
+\subsection{Déontologie du Hacker Éthique}
+
+L'éthique distingue le professionnel du vandale.
+\begin{itemize}
+    \item \textbf{Confidentialité :} Les données découvertes (salaires, stratégie, secrets industriels) ne doivent jamais être divulguées.
+    \item \textbf{Intégrité :} Ne pas détruire de données, ne pas installer de backdoors persistantes sans accord.
+    \item \textbf{Rendu (Reporting) :} L'objectif est d'aider le client à se sécuriser, pas de prouver sa supériorité technique.
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+\section{Méthodologies Standardisées}
+% ------------------------------------------------------------------------------
+
+Ne pas utiliser de méthodologie, c'est risquer d'oublier des failles critiques. Trois standards dominent l'industrie.
+
+\subsection{PTES (Penetration Testing Execution Standard)}
+
+C'est la méthodologie la plus utilisée pour les tests techniques. Elle divise le pentest en 7 phases :
+
+\begin{enumerate}
+    \item \textbf{Pre-Engagement Interactions :} Signature du contrat, définition du scope.
+    \item \textbf{Intelligence Gathering (Recon) :} Collecte d'infos passive et active.
+    \item \textbf{Threat Modeling :} Identifier les menaces les plus probables pour cette cible spécifique.
+    \item \textbf{Vulnerability Analysis :} Découverte des failles.
+    \item \textbf{Exploitation :} Exploitation des failles pour prouver l'impact.
+    \item \textbf{Post-Exploitation :} Valeur de la cible compromise, pivot, élévation de privilèges.
+    \item \textbf{Reporting :} Rédaction du rapport final.
+\end{enumerate}
+
+\subsection{OSSTMM (Open Source Security Testing Methodology Manual)}
+
+Plus théorique et exhaustive. Elle se concentre sur la \textbf{rigueur scientifique} de l'audit et les métriques (calcul de la surface d'attaque). Elle est souvent utilisée pour des audits physiques ou humains en plus de l'informatique.
+
+\subsection{NIST SP 800-115}
+
+Guide technique du NIST (National Institute of Standards and Technology) américain. Très structuré, il est souvent exigé pour les organismes publics ou les contrats gouvernementaux.
+
+% ------------------------------------------------------------------------------
+\section{Types de Tests (Boîtes)}
+% ------------------------------------------------------------------------------
+
+Le niveau d'information fourni au pentester définit le type de test.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{p{3cm}p{5cm}p{4cm}}
+    \toprule
+    \textbf{Type} & \textbf{Information fournie} & \textbf{Simulation} \\
+    \midrule
+    \textbf{Black Box} & Aucune information (0 knowledge). & Attaque externe par un inconnu. \\
+    \textbf{Gray Box} & Informations partielles (ex: compte utilisateur standard). & Attaque d'un employé malveillant ou partenaire. \\
+    \textbf{White Box} & Accès total (Code source, schémas réseau, comptes admin). & Audit de code ou revue de sécurité approfondie. \\
+    \bottomrule
+\end{tabular}
+\caption{Types de tests d'intrusion}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{Choix pour LiZbiZ :}
+La direction a choisi un test \textbf{Gray Box}. Vous disposez d'un compte utilisateur standard ("stagiaire") sur l'intranet. Cela permet de simuler une attaque interne sans perdre de temps à deviner les adresses IP (Black Box). L'objectif est de voir si un employé peu qualifié peut compromettre l'entreprise.
+\end{boxlizbiz}
+
+% ------------------------------------------------------------------------------
+\section{Les Phases Détaillées (Cycle de Vie)}
+% ------------------------------------------------------------------------------
+
+Indépendamment de la méthodologie, le cycle de vie suit toujours ce flux logique :
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance=2cm]
+    \node (recon) [draw, rounded corners] {Reconnaissance};
+    \node (scan) [draw, rounded corners, right=of recon] {Scanning};
+    \node (exploit) [draw, rounded corners, below=of scan] {Exploitation};
+    \node (maintain) [draw, rounded corners, left=of exploit] {Maintien Accès};
+    \node (cover) [draw, rounded corners, left=of maintain] {Couverture Traces};
+    
+    \draw[->, thick] (recon) -- (scan);
+    \draw[->, thick] (scan) -- (exploit);
+    \draw[->, thick] (exploit) -- (maintain);
+    \draw[->, thick] (maintain) -- (cover);
+    % Loop
+    \draw[->, thick, dashed] (maintain) to[bend right=60] node[below] {Nouvelle info} (recon);
+\end{tikzpicture}
+\caption{Cycle de vie d'une attaque}
+\end{figure}
