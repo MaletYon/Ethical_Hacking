@@ -1,135 +1,640 @@
 % ==============================================================================
-% Fichier : 01_cas_lizbiz_scope.tex
-% Description : Présentation du Cas Pratique et Règles d'Engagement (Scope)
-% ==============================================================================
+% Fichier     : chapitres/01_cas_lizbiz_scope.tex
+% Titre       : Cas Pratique : Mandat de Pentest LiZbiZ
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
+%==============================================================================
 
 \chapter{Cas Pratique : Mandat de Pentest LiZbiZ}
+\label{chap:mandat}
 
-Ce chapitre définit le cadre opérationnel et juridique de la mission de simulation d'attaque (Pentest) commanditée par l'entreprise LiZbiZ. Il servira de référence tout au long du cours pour justifier les actions techniques réalisées.
+Ce chapitre définit le cadre opérationnel et juridique de la mission de simulation
+d'attaque commanditée par l'entreprise LiZbiZ. Il servira de référence tout au long
+du cours pour justifier les actions techniques réalisées. La définition précise du
+périmètre et des règles d'engagement constitue le \textbf{fondement légal} de toute
+mission de test d'intrusion, sans elle, le pentester s'expose à des poursuites
+pénales au sens du Chapitre~\ref{chap:02_cadre_juridique}.
 
+% ==============================================================================
 \section{Contexte de la Mission}
-% ------------------------------------------------------------------------------
+\label{sec:contexte}
+% ==============================================================================
 
 \subsection{Origine de la Demande}
 
-Suite aux audits de sécurité réalisés précédemment (Cours d'Audit des SI), la direction de LiZbiZ a mis en place plusieurs mesures correctives. Cependant, le PDG souhaite aller plus loin qu'une simple revue documentaire.
+Suite aux audits de sécurité réalisés précédemment (Cours d'Audit des \sigle{SI}),
+la direction de LiZbiZ a mis en place plusieurs mesures correctives. Cependant, le
+\sigle{PDG} souhaite aller plus loin qu'une simple revue documentaire. Il exprime
+le besoin de vérifier concrètement l'effectivité des contrôles mis en place face
+à un adversaire réel. Cette démarche s'inscrit dans une stratégie de maturisation
+de la sécurité de l'information, passant d'une approche \textit{déclarative} à une
+approche \textit{probatoire}.
 
 \begin{boxlizbiz}
-\textbf{Mandat :}
-Le PDG de LiZbiZ souhaite évaluer la résilience réelle de son Système d'Information face à une attaque ciblée. Il a donc mandaté votre cabinet pour réaliser un \textbf{Pentest Externe} (Black Box) et un \textbf{Pentest Interne} (Gray Box).
+\textbf{Mandat LiZbiZ :}
+
+Le \sigle{PDG} de LiZbiZ souhaite évaluer la résilience réelle de son Système
+d'Information face à une attaque ciblée. Il a donc mandaté votre cabinet pour
+réaliser :
+\begin{itemize}
+    \item \textbf{Pentest Externe (Black Box) :} Simulation d'un attaquant
+          externe sans connaissance préalable de l'infrastructure.
+    \item \textbf{Pentest Interne (Gray Box) :} Simulation d'un \textit{insider}
+          ou d'un attaquant ayant compromis un poste de travail (compte
+          \og{}stagiaire\fg{} fourni).
+\end{itemize}
 \end{boxlizbiz}
 
-\subsection{Objectifs}
+\subsection{Objectifs de la Mission}
 
-\begin{itemize}
-    \item \textbf{Identifier les failles exploitables :} Détecter les vulnérabilités techniques et logiques non corrigées.
-    \item \textbf{Tester la réactivité :} Vérifier si l'équipe technique détecte l'intrusion (Blue Team).
-    \item \textbf{Accéder aux données critiques :} Tenter d'exfiltrer la base de données clients (Preuve de concept).
-\end{itemize}
+Les objectifs de la mission sont structurés selon le standard \sigle{PTES}
+(\textit{Pre-Engagement Interactions}) et mappés au framework
+\termecle{MITRE ATT\&CK} pour assurer une traçabilité complète des actions
+entreprises.
 
-% ------------------------------------------------------------------------------
-\section{Périmètre d'Intervention (Scope)}
-% ------------------------------------------------------------------------------
-
-La notion de périmètre est vitale. Hors périmètre, toute action est illégale.
-
-\subsection{Cibles Autorisées (In-Scope)}
-
-L'adresse IP publique et les systèmes internes suivants sont mis à disposition pour l'attaque :
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\begin{tabular}{lll}
-    \toprule
-    \textbf{Cible} & \textbf{Type} & \textbf{Adresse/IP (Lab)} \\
-    \midrule
-    www.lizbiz.com & Serveur Web (DMZ) & 203.0.113.10 (Simulée) \\
-    Intranet LiZbiZ & Portail Employé & 192.168.10.50 \\
-    Contrôleur de Domaine & Active Directory & 192.168.10.5 \\
-    Postes Utilisateurs & Windows 10 & 192.168.10.100 - 200 \\
-    \bottomrule
+\caption{Objectifs de la mission avec mapping MITRE ATT\&CK}
+\label{tab:objectifs_mission}
+\begin{tabular}{p{3.2cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Objectif} & \textbf{Description} & \textbf{MITRE ATT\&CK} \\
+\midrule
+Identifier les failles
+    & Détecter les vulnérabilités techniques et logiques non corrigées
+    & \sigle{TA0043} Recon, \sigle{TA0001} Initial Access \\
+\addlinespace
+Tester la réactivité
+    & Vérifier si l'équipe technique détecte l'intrusion (Blue Team)
+    & \sigle{TA0005} Defense Evasion \\
+\addlinespace
+Accéder aux données critiques
+    & Tenter d'exfiltrer la base clients (PoC)
+    & \sigle{TA0009} Collection, \sigle{TA0010} Exfiltration \\
+\addlinespace
+Évaluer l'impact business
+    & Mesurer les conséquences potentielles d'une compromission
+    & \sigle{TA0040} Impact \\
+\addlinespace
+Proposer des remédiations
+    & Fournir un plan d'action priorisé
+    & N/A (Reporting) \\
+\bottomrule
 \end{tabular}
-\caption{Liste des cibles autorisées}
 \end{table}
 
-\subsection{Interdictions (Out-of-Scope)}
+% ==============================================================================
+\section{Périmètre d'Intervention (\textit{Scope})}
+\label{sec:scope}
+% ==============================================================================
 
-Certaines actions sont strictement interdites car trop risquées pour la continuité de l'activité.
+La notion de périmètre est vitale. Hors périmètre, toute action est illégale et
+constitue une infraction pénale. Le scope doit être défini par écrit et signé par
+le client \textbf{avant le début de toute opération}, ce document constitue la
+preuve de l'autorisation légale en cas de contestation (voir
+Chapitre~\ref{chap:02_cadre_juridique}).
+
+\subsection{Cibles Autorisées (\textit{In-Scope})}
+
+Le périmètre autorisé couvre l'infrastructure traditionnelle (\textit{on-premise})
+ainsi que les extensions cloud déployées récemment par LiZbiZ. Cette approche
+reflète la réalité des environnements hybrides modernes.
+
+\begin{table}[htbp]
+\centering
+\caption{Liste des cibles autorisées avec mapping MITRE ATT\&CK}
+\label{tab:cibles}
+\begin{tabular}{p{3cm}p{2.8cm}p{2.8cm}p{3.5cm}}
+\toprule
+\textbf{Cible} & \textbf{Type} & \textbf{Adresse/IP (Lab)} & \textbf{MITRE ATT\&CK} \\
+\midrule
+\texttt{www.lizbiz.com}
+    & Serveur Web (DMZ)
+    & 203.0.113.10 (simulée)
+    & T1190 (Public-Facing App) \\
+\addlinespace
+\texttt{api.lizbiz.com}
+    & API Gateway
+    & 203.0.113.20 (simulée)
+    & T1190, T1078 (Valid Accounts) \\
+\addlinespace
+Intranet LiZbiZ
+    & Portail Employé
+    & 192.168.10.50
+    & T1078, T1059 (Scripting) \\
+\addlinespace
+Contrôleur de Domaine
+    & Active Directory (DC-01)
+    & 192.168.10.5
+    & T1558 (Kerberoasting) \\
+\addlinespace
+File Server
+    & Partage de fichiers
+    & 192.168.10.10
+    & T1039 (Network Share) \\
+\addlinespace
+Postes Utilisateurs
+    & Windows 10/11
+    & 192.168.10.100--200
+    & T1059, T1566 (Phishing) \\
+\addlinespace
+Azure AD Tenant
+    & Cloud Identity
+    & \texttt{tenant.onmicrosoft.com}
+    & T1078, T1098 (Account Manip.) \\
+\addlinespace
+AWS Environment
+    & Workloads Cloud
+    & N/A (via console/API)
+    & T1078, T1530 (Cloud Storage) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxinfo}
+\textbf{Note sur les cibles cloud :} Les composantes Azure et AWS sont simulées
+dans le laboratoire via des services locaux reproduisant les comportements
+d'authentification et d'accès aux données. Aucune action ne doit être dirigée
+vers des tenants ou comptes cloud réels.
+\end{boxinfo}
+
+\subsection{Actions Interdites (\textit{Out-of-Scope})}
 
 \begin{boxalert}
-\textbf{Actions Interdites sous peine de poursuites :}
+\textbf{Actions interdites sous peine de poursuites :}
 \begin{itemize}
-    \item \textbf{Attaques DoS/DDoS :} Saturation de la bande passante ou des services (Risque de coupure business).
-    \item \textbf{Social Engineering ciblé :} Pas d'hameçonnage ciblé sur le PDG ou les membres du COMEX (non autorisés).
-    \item \textbf{Destruction de données :} Toute modification, suppression ou chiffrement de données (Ransomware simulé uniquement).
-    \item \textbf{Accès aux systèmes de paiement bancaire :} Cible trop sensible réglementairement (PCI-DSS).
+    \item \textbf{Attaques DoS/DDoS :} Saturation de la bande passante ou des
+          services, risque de coupure business inacceptable.
+    \item \textbf{Social Engineering ciblé (COMEX) :} Aucun hameçonnage sur le
+          \sigle{PDG} ou les membres du Comité Exécutif.
+    \item \textbf{Destruction de données :} Toute modification, suppression ou
+          chiffrement de données. Ransomware simulé uniquement (fichiers
+          \texttt{flag}).
+    \item \textbf{Accès aux systèmes de paiement :} Exclusion totale des
+          environnements \sigle{PCI-DSS}.
+    \item \textbf{Attaques physiques :} Pas de tests d'intrusion physique
+          (\textit{badging}, \textit{lock picking}) non autorisés.
+    \item \textbf{Exploitation de tiers :} Pas d'attaques sur les fournisseurs
+          ou partenaires de LiZbiZ hors périmètre signé.
 \end{itemize}
 \end{boxalert}
 
-% ------------------------------------------------------------------------------
-\section{Règles d'Engagement (ROE - Rules of Engagement)}
-% ------------------------------------------------------------------------------
+% ==============================================================================
+\section{Règles d'Engagement (\textit{Rules of Engagement})}
+\label{sec:roe}
+% ==============================================================================
 
-Ces règles définissent "comment" l'attaque doit être menée.
+Les \termecle{Règles d'Engagement} (\sigle{ROE}) définissent \textit{comment}
+l'attaque doit être menée. Elles constituent un document contractuel signé par
+les deux parties et doivent être respectées scrupuleusement. Tout écart doit être
+immédiatement signalé au client.
 
 \subsection{Fenêtre Temporelle}
 
+\begin{table}[htbp]
+\centering
+\caption{Fenêtre temporelle de la mission}
+\label{tab:fenetre}
+\begin{tabular}{lll}
+\toprule
+\textbf{Paramètre} & \textbf{Valeur} & \textbf{Notes} \\
+\midrule
+Début de mission       & Lundi 09h00        & \textit{Kick-off} meeting obligatoire \\
+Fin de mission         & Vendredi 18h00     & Débriefing et restitution \\
+Attaques lourdes       & 19h00 -- 07h00     & Scans agressifs, exploitation bruyante \\
+Attaques furtives      & 24h/24             & Si approche \textit{stealth} demandée \\
+Point quotidien        & 17h00              & Rapport d'avancement au \sigle{RSSI} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Gestion des Preuves et Chaîne de Custody}
+\label{sec:preuves}
+
+La traçabilité des actions est impérative pour la crédibilité du rapport et la
+\textbf{protection juridique du pentester}. Chaque action doit être horodatée et
+documentée selon les principes de la chaîne de custody numérique.
+
 \begin{itemize}
-    \item \textbf{Début de mission :} Lundi 09h00.
-    \item \textbf{Fin de mission :} Vendredi 18h00.
-    \item \textbf{Plages horaires :} Attaques lourdes autorisées uniquement entre 19h00 et 07h00 pour limiter l'impact utilisateur (sauf si approche furtive souhaitée).
+    \item \textbf{Journalisation obligatoire :} Toutes les actions consignées avec
+          horodatage au format \sigle{ISO}~8601
+          (\texttt{YYYY-MM-DDThh:mm:ssZ}).
+    \item \textbf{Intégrité des preuves :} Chaque fichier de preuve doit faire
+          l'objet d'un hash \sigle{SHA-256} calculé immédiatement après
+          capture et inscrit dans le journal de bord. Toute modification
+          ultérieure invalide la preuve.
+    \item \textbf{Horodatage certifié :} Pour les missions à valeur probatoire
+          élevée, un horodatage \sigle{RFC}~3161 (tiers de confiance) est
+          recommandé.
+    \item \textbf{Captures d'écran :} \textit{Screenshots} avec \textit{timestamp}
+          système visible pour chaque étape clé.
+    \item \textbf{Flags de compromission :} Fichiers \texttt{flag.txt} contenant
+          un hash unique validant l'accès effectif à la cible.
+    \item \textbf{Exfiltration simulée :} Limitée à quelques enregistrements
+          anonymisés, jamais de données personnelles réelles.
+    \item \textbf{Conservation des logs :} Archivage sécurisé (chiffré) pendant
+          cinq ans conformément aux obligations légales.
 \end{itemize}
 
-\subsection{Gestion des Preuves}
+\begin{boxinfo}
+\textbf{Commande de référence, hachage SHA-256 d'une preuve :}
+\begin{lstlisting}[language=bash]
+# Calcul du hash d'une capture (Linux)
+sha256sum screenshot_exploit_2025-01-20T14h32.png >> journal_preuves.txt
 
+# Verification d'integrite ulterieure
+sha256sum -c journal_preuves.txt
+\end{lstlisting}
+\end{boxinfo}
+
+\subsection{Procédure d'Arrêt d'Urgence}
+
+En cas de détection d'une vulnérabilité critique exploitable en temps réel par
+un tiers, ou de dysfonctionnement majeur des systèmes cibles, le pentester doit
+immédiatement :
+
+\begin{enumerate}
+    \item \textbf{Arrêter} toutes les activités offensives en cours.
+    \item \textbf{Contacter} le point de contact client désigné (disponible 24h/24).
+    \item \textbf{Documenter} l'incident dans le journal de bord avec horodatage.
+    \item \textbf{Attendre} l'autorisation de reprise avant de poursuivre.
+\end{enumerate}
+
+\begin{boxlizbiz}
+\textbf{Points de contact urgence LiZbiZ :}
 \begin{itemize}
-    \item Toutes les actions doivent être journalisées (Logs) et horodatées.
-    \item Toute exfiltration de données doit être simulée par des fichiers "flag" (ex: fichier \texttt{flag.txt} contenant un hash) ou limitée à quelques enregistrements anonymisés.
+    \item \sigle{DSI} : \texttt{+237~6XX~XXX~XXX} (disponible 24h/24)
+    \item \sigle{RSSI} : \texttt{+237~6XX~XXX~XXX} (backup)
+    \item Email : \texttt{security@lizbiz.com}
+\end{itemize}
+\end{boxlizbiz}
+
+% ==============================================================================
+\section{Documents Légaux et Contractuels}
+\label{sec:documents_legaux}
+% ==============================================================================
+
+Avant le début de toute mission, trois documents doivent être signés et archivés.
+Ces documents constituent la \textbf{protection juridique} du pentester et du
+client, et sont exigibles en cas de contestation judiciaire.
+
+\subsection{Lettre de Mission (\textit{Letter of Engagement})}
+
+La lettre de mission formalise l'accord entre les parties et définit les grandes
+lignes de la prestation. Elle doit être rédigée en double exemplaire original,
+signée et cachetée par les représentants légaux des deux parties.
+
+\begin{boxlizbiz}
+\textbf{Template, Lettre de Mission (extraits essentiels) :}
+
+\medskip
+\textbf{OBJET :} Mandat de test d'intrusion (Pentest)
+
+\medskip
+Entre les soussignés :
+\begin{itemize}
+    \item \textbf{Le Client :} LiZbiZ \sigle{SARL}, représentée par
+          M.~[Nom du \sigle{PDG}], Directeur Général
+    \item \textbf{Le Prestataire :} [Nom du cabinet], représenté par
+          M.~[Nom], [Fonction]
 \end{itemize}
 
-% ------------------------------------------------------------------------------
-\section{Environnement de Laboratoire (Immersion)}
-% ------------------------------------------------------------------------------
+\medskip
+\textbf{Article 1, Objet :} Le Prestataire est mandaté pour réaliser un test
+d'intrusion sur le Système d'Information du Client, selon les modalités définies
+dans le présent document.
 
-Pour réaliser ce TP en toute sécurité, nous travaillerons sur un environnement isolé (Lab).
+\textbf{Article 2, Périmètre :} Défini en Annexe~A (liste des cibles
+\textit{in-scope}).
+
+\textbf{Article 3, Durée :} Du [Date début] au [Date fin].
+
+\textbf{Article 4, ROE :} Les règles d'engagement sont définies en Annexe~B
+et s'imposent au Prestataire.
+
+\textbf{Article 5, Confidentialité :} Le Prestataire s'engage à garder
+confidentielles toutes les informations collectées.
+
+\textbf{Article 6, Responsabilité :} Toute action hors périmètre engage la
+responsabilité exclusive du Prestataire.
+
+\medskip
+Fait à [Lieu], le [Date], En deux exemplaires originaux\\
+\textit{Le Client [Signature, Cachet] \hfill Le Prestataire [Signature, Cachet]}
+\end{boxlizbiz}
+
+\subsection{Document ROE, Extrait de Référence}
+
+\begin{boxlizbiz}
+\textbf{Extrait ROE LiZbiZ :}
+
+\smallskip
+\textbf{1. Autorisations}
+\begin{itemize}
+    \item Tests externes (Black Box) : \textbf{AUTORISÉS}
+    \item Tests internes (Gray Box) : \textbf{AUTORISÉS}
+          (compte \og{}stagiaire\fg{} fourni)
+    \item Tests Cloud (Azure/AWS) : \textbf{AUTORISÉS}
+          (\textit{credentials} fournis)
+\end{itemize}
+
+\textbf{2. Interdictions}
+\begin{itemize}
+    \item Attaques DoS/DDoS : \textbf{INTERDIT}
+    \item Social Engineering COMEX : \textbf{INTERDIT}
+    \item Accès systèmes de paiement : \textbf{INTERDIT}
+    \item Exploitation de fournisseurs tiers : \textbf{INTERDIT}
+\end{itemize}
+
+\textbf{3. Plages horaires}
+\begin{itemize}
+    \item Attaques lourdes : 19h00--07h00 uniquement
+    \item Attaques furtives : 24h/24
+\end{itemize}
+
+\textbf{4. Livrables}
+\begin{itemize}
+    \item Rapport exécutif : \sigle{PDF}, 5--10 pages
+    \item Rapport technique : \sigle{PDF} + annexes, 20--40 pages
+    \item Preuves de compromission : archive \sigle{ZIP} chiffrée (hashes \sigle{SHA-256})
+    \item Scripts \sigle{PoC} : archive \sigle{ZIP} chiffrée
+    \item Présentation de débriefing : \sigle{PPTX}/\sigle{PDF}
+\end{itemize}
+\end{boxlizbiz}
+
+% ==============================================================================
+\section{Environnement de Laboratoire}
+\label{sec:lab}
+% ==============================================================================
+
+Pour réaliser ce \sigle{TP} en toute sécurité, nous travaillerons sur un
+environnement isolé reproduisant fidèlement l'infrastructure LiZbiZ.
+\textbf{L'isolement est obligatoire}, aucune action ne doit toucher des systèmes
+de production réels ou Internet.
 
 \subsection{Architecture du Lab}
 
-L'infrastructure est reproduite sous GNS3 ou EVE-NG :
+L'infrastructure est reproduite sous GNS3, EVE-NG ou Proxmox VE. Elle reflète
+un environnement hybride moderne avec segmentation réseau et extension cloud.
 
-\begin{figure}[h!]
+\begin{table}[htbp]
+\centering
+\caption{Architecture du laboratoire LiZbiZ}
+\label{tab:lab_architecture}
+\begin{tabular}{llll}
+\toprule
+\textbf{Zone} & \textbf{Composants} & \textbf{Réseau} & \textbf{OS} \\
+\midrule
+Attaquant
+    & Kali Linux 2024.x
+    & 10.10.10.0/24 (WAN simulé)
+    & Kali Linux \\
+DMZ
+    & Web Server, API Gateway
+    & 203.0.113.0/24
+    & Ubuntu 22.04 \\
+LAN
+    & AD, File Server, Postes
+    & 192.168.10.0/24
+    & Windows Server 2019/10 \\
+Cloud (simulé)
+    & Azure AD Connect, AWS sim.
+    & 172.16.0.0/24
+    & Windows Server 2019 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-    node distance=1.5cm,
-    box/.style={rectangle, draw, thick, fill=white, minimum width=2cm, minimum height=1cm, align=center}
+    node distance=1.6cm and 2.2cm,
+    box/.style={
+        rectangle, draw, thick, rounded corners=4pt,
+        minimum width=2.4cm, minimum height=1cm, align=center,
+        font=\small
+    }
 ]
-    % Nodes
-    \node[box, fill=red!20] (attacker) {Attaquant\\(Kali Linux)};
-    \node[box, fill=gray!20, right=of attacker] (fw) {Firewall\\(pfSense)};
-    \node[box, fill=blue!20, above right=of fw] (web) {DMZ\\(Web Server)};
-    \node[box, fill=green!20, below right=of fw] (ad) {LAN\\(AD + Postes)};
-    
-    % Connections
+    % Nœuds
+    \node[box, fill=red!15]   (attacker) {Attaquant\\(Kali Linux)};
+    \node[box, fill=gray!20,  right=of attacker] (fw) {Firewall\\(pfSense)};
+    \node[box, fill=blue!15,  above right=of fw] (web) {DMZ\\Web + API};
+    \node[box, fill=green!15, right=of fw]       (lan) {LAN\\AD + Postes};
+    \node[box, fill=orange!15,below right=of fw] (cloud) {Cloud\\(simulé)};
+
+    % Connexions
     \draw[->, thick] (attacker) -- (fw);
-    \draw[->, thick] (fw) -- (web);
-    \draw[->, thick] (fw) -- (ad);
+    \draw[->, thick] (fw)       -- (web);
+    \draw[->, thick] (fw)       -- (lan);
+    \draw[->, thick] (fw)       -- (cloud);
 \end{tikzpicture}
-\caption{Topologie simplifiée du Lab LiZbiZ}
+\caption{Topologie enrichie du Lab LiZbiZ (hybride on-premise + cloud)}
+\label{fig:topo_lab}
 \end{figure}
 
-\subsection{Configuration Requise}
+\subsection{Configuration Matérielle Requise}
 
 \begin{itemize}
-    \item \textbf{Machine d'Attaque :} Kali Linux 2023.x (VM).
-    \item \textbf{Cibles :} Machines Virtuelles (Windows Server 2019, Ubuntu Server, Windows 10).
-    \item \textbf{Réseau :} Isolation totale de l'Internet réel (Mode "Host-Only" ou Réseau interne).
+    \item \textbf{Processeur :} 4~c\oe{}urs minimum, 6~c\oe{}urs recommandés
+          (virtualisation activée dans le \sigle{BIOS}, \sigle{VT-x} ou
+          \sigle{AMD-V}).
+    \item \textbf{RAM :} 16~Go minimum, 24~Go recommandés.
+    \item \textbf{Stockage :} 150~Go d'espace libre (\sigle{SSD} recommandé).
+    \item \textbf{Hyperviseur :} VMware Workstation/Fusion, VirtualBox~7.x
+          ou Proxmox VE.
 \end{itemize}
 
-\subsection{Livrables de la Mission}
+\subsection{Déploiement Automatisé du Lab (Vagrant)}
 
-À la fin du cours, l'étudiant doit fournir :
+Le laboratoire peut être déployé automatiquement via un script Vagrant, garantissant
+un environnement reproductible et identique pour tous les étudiants.
+
+\begin{lstlisting}[language=Ruby, caption={Vagrantfile, Lab LiZbiZ Pentest},
+                   label={lst:vagrantfile}]
+# Vagrantfile - Lab LiZbiZ Pentest
+Vagrant.configure("2") do |config|
+
+  # Machine Attaquante - Kali Linux
+  config.vm.define "kali" do |kali|
+    kali.vm.box      = "kalilinux/rolling"
+    kali.vm.hostname = "kali-attacker"
+    kali.vm.network "private_network", ip: "10.10.10.100"
+    kali.vm.provider "virtualbox" do |vb|
+      vb.memory = 4096
+      vb.cpus   = 2
+    end
+  end
+
+  # Serveur Web - DMZ
+  config.vm.define "webserver" do |web|
+    web.vm.box      = "ubuntu/jammy64"
+    web.vm.hostname = "webserver-lizbiz"
+    web.vm.network "private_network", ip: "203.0.113.10"
+    web.vm.provider "virtualbox" do |vb|
+      vb.memory = 2048
+      vb.cpus   = 1
+    end
+    web.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y apache2 php libapache2-mod-php mysql-server
+      # Configuration vulnerable pour exercices
+    SHELL
+  end
+
+  # Controleur de Domaine - Windows Server
+  config.vm.define "dc01" do |dc|
+    dc.vm.box      = "gusztavvargadr/windows-server-2019"
+    dc.vm.hostname = "DC01"
+    dc.vm.network "private_network", ip: "192.168.10.5"
+    dc.vm.provider "virtualbox" do |vb|
+      vb.memory = 4096
+      vb.cpus   = 2
+    end
+  end
+
+end
+\end{lstlisting}
+
+% ==============================================================================
+\section{Workflow du Pentest LiZbiZ}
+\label{sec:workflow}
+% ==============================================================================
+
+Le déroulement de la mission suit le cycle de vie standardisé \sigle{PTES},
+adapté au contexte LiZbiZ. Chaque phase produit des livrables spécifiques et
+alimente la phase suivante.
+
+\begin{table}[htbp]
+\centering
+\caption{Workflow du pentest, mapping PTES et MITRE ATT\&CK}
+\label{tab:workflow}
+\begin{tabular}{p{1.5cm}p{2.8cm}p{2.5cm}p{5cm}}
+\toprule
+\textbf{Phase} & \textbf{PTES} & \textbf{MITRE ATT\&CK} & \textbf{Activités LiZbiZ} \\
+\midrule
+1 & Préparation (\textit{Pre-Engagement})
+  & N/A
+  & Signature ROE, configuration du lab \\
+\addlinespace
+2 & Reconnaissance (\textit{Intelligence Gathering})
+  & TA0043
+  & OSINT, Google Dorks, Shodan \\
+\addlinespace
+3 & Scanning (\textit{Vulnerability Analysis})
+  & TA0043
+  & Nmap, énumération de services \\
+\addlinespace
+4 & Exploitation
+  & TA0001, TA0002
+  & SQLi, Metasploit, services réseaux \\
+\addlinespace
+5 & Post-exploitation
+  & TA0003--TA0008
+  & Escalade, mouvement latéral, AD \\
+\addlinespace
+6 & Reporting
+  & N/A
+  & Rapport exécutif + technique \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================================
+\section{Livrables de la Mission}
+\label{sec:livrables}
+% ==============================================================================
+
+À la fin du cours, l'étudiant doit fournir un ensemble de livrables conformes
+aux standards professionnels. Ces documents constituent le résultat tangible de
+la mission et servent de base aux décisions de remédiation.
+
+\begin{table}[htbp]
+\centering
+\caption{Livrables attendus de la mission}
+\label{tab:livrables}
+\begin{tabular}{p{3.5cm}p{2.5cm}p{6.5cm}}
+\toprule
+\textbf{Livrable} & \textbf{Format} & \textbf{Contenu} \\
+\midrule
+Rapport Exécutif
+    & PDF (5--10 pages)
+    & Synthèse, risques majeurs, recommandations stratégiques \\
+\addlinespace
+Rapport Technique
+    & PDF (20--40 pages)
+    & Méthodologie, findings détaillés, \sigle{PoC},
+      \sigle{CVSS v3.1}, mapping MITRE \\
+\addlinespace
+Preuves de compromission
+    & ZIP chiffré
+    & Flags récupérés, screenshots, logs horodatés,
+      hashes \sigle{SHA-256} \\
+\addlinespace
+Scripts PoC
+    & Archive ZIP
+    & Exploits utilisés, scripts personnalisés \\
+\addlinespace
+Présentation Débriefing
+    & PPTX/PDF
+    & Support pour la réunion de restitution \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================================
+\section*{Points Clés à Retenir}
+% ==============================================================================
+
+\begin{boxinfo}
+\textbf{Ce qu'il faut retenir de ce chapitre :}
 \begin{enumerate}
-    \item Un \textbf{Rapport de Pentest} complet (Exécutif + Technique).
-    \item Un fichier \textbf{Proof of Concept (PoC)} montrant les exploits utilisés.
-    \item Les \textbf{Flags} récupérés (Preuves de compromission).
+    \item Le \textbf{périmètre (\textit{Scope})} définit les limites légales de
+          l'intervention, toute action hors périmètre est un délit.
+    \item Les \textbf{ROE} précisent les modalités d'exécution : horaires,
+          méthodes, interdictions.
+    \item Le mapping \textbf{MITRE ATT\&CK} permet de documenter les techniques
+          selon un standard international reconnu des équipes défensives.
+    \item La \textbf{chaîne de custody} (hash \sigle{SHA-256} + horodatage) est
+          indispensable pour la valeur probatoire des preuves.
+    \item L'environnement de lab doit être \textbf{totalement isolé} d'Internet
+          pour éviter tout impact sur des systèmes tiers.
+    \item Les \textbf{documents légaux} (lettre de mission, ROE signés) doivent
+          être archivés et accessibles pendant toute la durée de la mission et
+          au-delà.
+    \item L'architecture LiZbiZ reflète un \textbf{environnement hybride moderne}
+          (on-premise + cloud).
 \end{enumerate}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Exercice Pratique}
+% ==============================================================================
+
+\begin{boxexo}
+\textbf{Exercice 1.1, Préparation du Lab LiZbiZ}
+
+\medskip
+\textbf{Objectif :} Configurer l'environnement de laboratoire et valider
+l'isolement réseau avant le début des exercices d'intrusion.
+
+\medskip
+\textbf{Étapes :}
+\begin{enumerate}
+    \item Installer VirtualBox~7.x ou VMware Workstation sur votre machine.
+    \item Télécharger l'image officielle Kali Linux 2024.x depuis
+          \texttt{kali.org}.
+    \item Créer une VM Kali : 4~Go RAM, 2~c\oe{}urs, 40~Go disque.
+    \item Configurer le réseau en mode \og{}Host-Only\fg{} ou
+          \og{}NAT Network\fg{} interne.
+    \item \textbf{Vérifier l'isolement :} depuis la VM, tenter
+          \texttt{ping 8.8.8.8}, la commande doit échouer.
+    \item Calculer le hash \sigle{SHA-256} du fichier ISO téléchargé et le
+          comparer à la valeur publiée sur \texttt{kali.org} pour valider
+          l'intégrité.
+    \item Documenter la configuration (version \sigle{OS}, adresses IP,
+          hyperviseur) dans votre journal de bord.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable attendu :} Capture d'écran du \texttt{ifconfig} de la VM Kali
++ hash \sigle{SHA-256} de l'image vérifiée.
+\end{boxexo}
