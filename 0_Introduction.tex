@@ -1,8 +1,8 @@
 % ==============================================================================
 % Fichier     : chapitres/0_Introduction.tex
-% Titre       : Introduction Générale — Cours de Hacking Éthique
+% Titre       : Introduction Générale, Cours de Hacking Éthique
 % Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
-% ==============================================================================
+%==============================================================================
 
 \chapter*{Introduction Générale}
 \addcontentsline{toc}{chapter}{Introduction Générale}
@@ -21,35 +21,201 @@
 \section*{Contexte et Pertinence du Cours}
 % ==============================================================================
 
-La cybersécurité offensive est aujourd'hui l'une des compétences les plus recherchées et les plus mal comprises de l'économie numérique. Confondre le hacker criminel avec le professionnel de la sécurité offensive, c'est confondre le cambrioleur avec l'expert en serrurerie mandaté pour tester les serrures d'une banque. La frontière n'est pas dans la technique — elle est dans le \textbf{mandat, la déontologie et la loi}.
+La cybersécurité offensive est aujourd'hui l'une des compétences les plus recherchées
+et les plus mal comprises de l'économie numérique. Confondre le hacker criminel avec
+le professionnel de la sécurité offensive, c'est confondre le cambrioleur avec l'expert
+en serrurerie mandaté pour tester les serrures d'une banque. La frontière n'est pas
+dans la technique, elle est dans le \textbf{mandat, la déontologie et la loi}.
 
-Ce cours de \termecle{Hacking Éthique} se positionne résolument du côté du professionnel : celui qui comprend l'art de l'attaque non pour nuire, mais pour renforcer les défenses. La maîtrise des techniques offensives est aujourd'hui indispensable à tout responsable de la sécurité des systèmes d'information (\sigle{RSSI}), auditeur certifié \sigle{CISA} ou consultant en \textit{penetration testing}.
+Ce cours de \termecle{Hacking Éthique} se positionne résolument du côté du
+professionnel : celui qui comprend l'art de l'attaque non pour nuire, mais pour
+renforcer les défenses. La maîtrise des techniques offensives est aujourd'hui
+indispensable à tout responsable de la sécurité des systèmes d'information
+(\sigle{RSSI}), auditeur certifié \sigle{CISA} ou consultant en \textit{penetration
+testing}. Dans un contexte où les cyberattaques se multiplient et se sophistiquent
+— \textit{ransomwares}, attaques par chaîne d'approvisionnement, compromission de
+comptes cloud, la capacité à penser comme un attaquant est devenue un avantage
+stratégique pour les organisations.
 
-Ce cours s'inscrit également dans la continuité logique du cours d'Audit des Systèmes d'Information. Là où l'audit évalue les contrôles en place, le \termecle{test d'intrusion} (pentest) les met à l'épreuve du feu. Les deux disciplines sont complémentaires et partagent un même impératif éthique : l'indépendance, la rigueur et la confidentialité.
+Ce cours s'inscrit dans la continuité logique du cours d'Audit des Systèmes
+d'Information. Là où l'audit évalue les contrôles en place, le \termecle{test
+d'intrusion} (pentest) les met à l'épreuve du feu. Les deux disciplines sont
+complémentaires et partagent un même impératif éthique : l'indépendance, la rigueur
+et la confidentialité. Le présent cours élargit toutefois le spectre en intégrant
+les défis contemporains : sécurité cloud, \sigle{API}, conteneurs, et environnements
+mobiles.
+
+% ------------------------------------------------------------------------------
+\subsection*{Évolution du Paysage de la Menace}
+% ------------------------------------------------------------------------------
+
+Le paysage des cybermenaces a considérablement évolué, rendant les compétences en
+hacking éthique plus cruciales que jamais. Les attaquants adoptent des approches
+systémiques, combinant plusieurs vecteurs d'attaque, maintenant un accès persistant
+sur de longues périodes, et ciblant des environnements hétérogènes incluant le cloud
+et les identités numériques. Cette évolution impose une compréhension approfondie
+des \sigle{TTP} (\textit{Tactics, Techniques, Procedures}) des acteurs de menace.
+
+\begin{table}[htbp]
+\centering
+\caption{Principaux types de menaces contemporaines}
+\label{tab:menaces}
+\begin{tabular}{lll}
+\toprule
+\textbf{Type de Menace} & \textbf{Exemples} & \textbf{Impact} \\
+\midrule
+Ransomware             & LockBit, BlackCat, Conti          & Chiffrement, arrêt opérationnel \\
+Supply Chain           & SolarWinds, Log4j, MoveIT         & Compromission en cascade \\
+Cloud Misconfiguration & S3 publics, IAM faible             & Fuite de données massive \\
+APT                    & APT29, APT41, Lazarus              & Espionnage, vol de PI \\
+Identity Attacks       & Kerberoasting, Golden Ticket       & Compromission totale AD \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ------------------------------------------------------------------------------
+\subsection*{Frameworks et Standards de Référence}
+% ------------------------------------------------------------------------------
+
+Ce cours s'appuie sur les frameworks et standards internationaux reconnus, assurant
+une formation alignée sur les meilleures pratiques mondiales et les attentes du marché
+de l'emploi.
+
+Le framework \termecle{MITRE ATT\&CK} (\textit{Adversarial Tactics, Techniques \&
+Common Knowledge}) constitue désormais la référence mondiale pour documenter et
+communiquer sur les techniques d'attaque. Chaque technique enseignée dans ce cours
+sera mappée à son identifiant ATT\&CK correspondant, facilitant l'intégration avec
+les équipes de défense (\textit{Blue Team}) et la production de rapports
+professionnels.
+
+\begin{boxinfo}
+\textbf{Les 14 tactiques MITRE ATT\&CK (Enterprise) :}
+
+\smallskip
+\sigle{TA0043}~Reconnaissance · \sigle{TA0042}~Resource Development ·
+\sigle{TA0001}~Initial Access · \sigle{TA0002}~Execution ·
+\sigle{TA0003}~Persistence · \sigle{TA0004}~Privilege Escalation ·
+\sigle{TA0005}~Defense Evasion · \sigle{TA0006}~Credential Access ·
+\sigle{TA0007}~Discovery · \sigle{TA0008}~Lateral Movement ·
+\sigle{TA0009}~Collection · \sigle{TA0011}~Command and Control ·
+\sigle{TA0010}~Exfiltration · \sigle{TA0040}~Impact.
+
+\smallskip
+\noindent Cette taxonomie structure l'ensemble du cours et les rapports de pentest
+produits en Partie~III.
+\end{boxinfo}
+
+\begin{table}[htbp]
+\centering
+\caption{Standards et frameworks de référence intégrés au cours}
+\label{tab:standards}
+\begin{tabular}{lll}
+\toprule
+\textbf{Standard} & \textbf{Organisme} & \textbf{Usage dans le cours} \\
+\midrule
+MITRE ATT\&CK  & MITRE Corporation & Mapping des TTP, communication \\
+PTES           & Pentest Standard  & Méthodologie des 7 phases \\
+OSSTMM         & ISECOM            & Métriques, surface d'attaque \\
+NIST SP 800-115 & NIST             & Guide technique officiel \\
+OWASP Top 10   & OWASP             & Vulnérabilités Web \\
+OWASP API Top 10 & OWASP           & Sécurité des API \\
+CVSS v3.1      & FIRST             & Scoring des vulnérabilités \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxinfo}
+\textbf{Note sur le scoring CVSS :} Ce cours utilise le standard
+\sigle{CVSS v3.1} (Common Vulnerability Scoring System, version 3.1, publiée
+par le \sigle{FIRST}). La version~4.0, publiée en novembre~2023, introduit
+des métriques supplémentaires (\textit{Threat Metrics}, \textit{Environmental
+Safety}) qui seront mentionnées en Chapitre~\ref{chap:reporting}. Les
+rapports professionnels doivent toujours préciser la version utilisée.
+\end{boxinfo}
 
 % ==============================================================================
 \section*{Fil Conducteur : La Mission Pentest LiZbiZ}
 % ==============================================================================
 
-Fidèle à la pédagogie par l'immersion, ce cours retrouve l'entreprise \textbf{LiZbiZ} — déjà auditée dans le cours précédent. Cette fois, le PDG ne se contente plus d'une revue documentaire : il mandate une \textbf{simulation d'attaque réelle} (Black Box externe + Gray Box interne) pour évaluer la résistance de son SI face à un adversaire déterminé.
+Fidèle à la pédagogie par l'immersion, ce cours retrouve l'entreprise
+\textbf{LiZbiZ}, déjà auditée dans le cours précédent. Cette fois, le \sigle{PDG}
+ne se contente plus d'une revue documentaire : il mandate une \textbf{simulation
+d'attaque réelle} combinant un test \textit{Black Box} externe et un test
+\textit{Gray Box} interne pour évaluer la résistance de son \sigle{SI} face à un
+adversaire déterminé. Ce scénario reflète les préoccupations contemporaines des
+dirigeants : non seulement identifier les failles, mais mesurer concrètement leur
+exploitabilité et leur impact business.
 
-Vous endosserez le rôle de \textbf{pentester} (testeur d'intrusion), évoluant dans un environnement de laboratoire isolé reproduisant fidèlement l'infrastructure LiZbiZ. De la reconnaissance passive initiale jusqu'à la rédaction du rapport de restitution, vous parcourrez l'intégralité de la chaîne d'attaque — toujours dans le cadre légal défini par les \textit{Rules of Engagement} (ROE).
+Vous endosserez le rôle de \textbf{pentester} (testeur d'intrusion), évoluant dans
+un environnement de laboratoire isolé reproduisant fidèlement l'infrastructure
+LiZbiZ. De la reconnaissance passive initiale, incluant la collecte d'adresses
+email qui alimentera une campagne de phishing simulée au
+Chapitre~\ref{chap:exploit}, jusqu'à la rédaction du rapport de restitution, vous
+parcourrez l'intégralité de la chaîne d'attaque, toujours dans le cadre légal défini
+par les \termecle{Rules of Engagement} (\sigle{ROE}).
+
+\begin{boxinfo}
+\textbf{Architecture cible enrichie (LiZbiZ) :}
+
+L'environnement LiZbiZ simule une entreprise de taille moyenne avec une
+infrastructure typique :
+\begin{itemize}
+    \item un périmètre \sigle{DMZ} exposant les services web et mail ;
+    \item un réseau interne segmenté abritant l'Active Directory et les postes
+          utilisateurs ;
+    \item une extension cloud hébergeant des \textit{workloads} et données
+          sensibles.
+\end{itemize}
+Cette architecture permet d'illustrer l'ensemble des techniques modernes de
+pentest, du mouvement latéral traditionnel au pivotage vers le cloud.
+\end{boxinfo}
 
 % ==============================================================================
 \section*{Objectifs Généraux du Cours}
 % ==============================================================================
 
 \begin{boxobjectifs}
-À l'issue de ce cours, l'étudiant sera capable de :
+\textbf{Objectifs fondamentaux}, À l'issue de ce cours, l'étudiant sera capable de :
 \begin{enumerate}
-    \item \textbf{Maîtriser le cadre juridique} du hacking éthique (Code pénal, déontologie, ROE).
-    \item \textbf{Appliquer les méthodologies} reconnues : PTES, OSSTMM, NIST SP 800-115.
-    \item \textbf{Conduire une reconnaissance passive} (OSINT, Shodan, Google Dorks, métadonnées).
-    \item \textbf{Réaliser un scanning actif} (Nmap, énumération de services SMB/DNS/Web).
-    \item \textbf{Exploiter des vulnérabilités} (injection SQL, Metasploit, services réseaux).
-    \item \textbf{Mener la post-exploitation} (élévation de privilèges, mouvement latéral, Active Directory).
-    \item \textbf{Appliquer les techniques d'évasion} (obfuscation, Living Off The Land, anti-forensics).
-    \item \textbf{Rédiger un rapport de pentest} professionnel (Executive Summary, findings CVSS, remédiation).
+    \item \textbf{Maîtriser le cadre juridique} du hacking éthique : Code pénal,
+          déontologie, \sigle{ROE}, et cadre réglementaire spécifique au contexte
+          africain francophone (loi camerounaise sur la cybersécurité,
+          référentiel \sigle{CEMAC}).
+    \item \textbf{Appliquer les méthodologies} reconnues (PTES, OSSTMM,
+          NIST SP 800-115) et utiliser le framework \sigle{MITRE ATT\&CK} pour
+          documenter les techniques employées.
+    \item \textbf{Conduire une reconnaissance passive complète} (OSINT, Shodan,
+          Google Dorks, métadonnées) et intégrer la Threat Intelligence dans la
+          phase de préparation.
+    \item \textbf{Réaliser un scanning actif avancé} (Nmap, énumération de services
+          SMB/DNS/Web/LDAP) avec analyse des résultats et contournement de
+          pare-feux.
+    \item \textbf{Exploiter les vulnérabilités web} (OWASP Top 10 : injection SQL
+          avancée, LFI/RFI, XSS, SSRF) et système (Metasploit, services réseaux,
+          kernel exploits).
+    \item \textbf{Mener la post-exploitation complète} : escalade de privilèges
+          Linux/Windows, mouvement latéral, attaques Active Directory
+          (Kerberoasting, DCSync, Golden Ticket).
+    \item \textbf{Appliquer les techniques d'évasion modernes} (obfuscation,
+          Living Off The Land, bypass AMSI/EDR, attaques fileless).
+    \item \textbf{Rédiger un rapport de pentest professionnel} conforme au standard
+          PTES Reporting, avec scoring \sigle{CVSS v3.1} et plan de remédiation
+          priorisé incluant les références \sigle{MITRE ATT\&CK}.
+\end{enumerate}
+\end{boxobjectifs}
+
+\begin{boxobjectifs}
+\textbf{Objectifs avancés} (modules complémentaires) :
+\begin{enumerate}
+    \item Effectuer des tests de sécurité cloud sur les environnements \sigle{AWS},
+          Azure et \sigle{GCP} (configuration review, exploitation \sigle{IAM},
+          container security).
+    \item Conduire des tests de sécurité \sigle{API} selon l'OWASP API Security
+          Top 10 (Broken Object Level Authorization, injection, mass assignment).
+    \item Réaliser des tests de sécurité mobile (analyse statique/dynamique
+          d'applications Android/iOS, reverse engineering de base).
+    \item Comprendre les fondamentaux du Red Teaming : infrastructure C2,
+          \sigle{OPSEC}, persistance longue durée.
 \end{enumerate}
 \end{boxobjectifs}
 
@@ -57,22 +223,130 @@ Vous endosserez le rôle de \textbf{pentester} (testeur d'intrusion), évoluant 
 \section*{Organisation du Cours}
 % ==============================================================================
 
-Le cours est structuré en trois parties progressives, de la définition du cadre légal à la restitution des résultats.
+Le cours est structuré en trois parties progressives, de la définition du cadre légal
+à la restitution des résultats, avec une extension optionnelle vers les domaines
+émergents de la sécurité offensive. Chaque chapitre combine apports théoriques,
+démonstrations pratiques et exercices \textit{hands-on}.
+
+\begin{table}[htbp]
+\centering
+\caption{Structure générale du cours (* modules optionnels)}
+\label{tab:structure}
+\begin{tabular}{lll}
+\toprule
+\textbf{Partie} & \textbf{Chapitres} & \textbf{Contenu} \\
+\midrule
+I  & 1--4 & Cadre, Méthodologie et Reconnaissance :\\
+   &      & Mandat, cadre juridique, OSINT, scanning actif \\
+\addlinespace
+II & 5--7 & Phase Offensive :\\
+   &      & Exploitation, post-exploitation, mouvement latéral, évasion \\
+\addlinespace
+III & 8--9 & Restitution :\\
+    &      & Rapport de pentest, évaluation finale, CTF \\
+\addlinespace
+IV* & 10--12 & Modules avancés (optionnels) :\\
+    &        & Cloud Security, API Security, Mobile Security \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \medskip
-\noindent\textbf{Partie I — Cadre, Méthodologie et Reconnaissance}
+\noindent\textbf{Partie I, Cadre, Méthodologie et Reconnaissance}
 
-Elle couvre le mandat de mission et le périmètre LiZbiZ (Chapitre~\ref{chap:mandat}), le cadre juridique et les méthodologies (Chapitre~\ref{chap:juridique}), la reconnaissance passive et l'OSINT (Chapitre~\ref{chap:osint}), et le scanning actif (Chapitre~\ref{chap:scanning}).
+Elle couvre le mandat de mission et le périmètre LiZbiZ
+(Chapitre~\ref{chap:mandat}), le cadre juridique et les méthodologies
+(Chapitre~\ref{chap:juridique}), la reconnaissance passive et l'OSINT
+(Chapitre~\ref{chap:osint}), et le scanning actif
+(Chapitre~\ref{chap:scanning}).
 
 \medskip
-\noindent\textbf{Partie II — Phase Offensive : Exploitation et Post-Exploitation}
+\noindent\textbf{Partie II, Phase Offensive : Exploitation et Post-Exploitation}
 
-Elle traite des vulnérabilités et de leur exploitation (Chapitre~\ref{chap:exploit}), de la post-exploitation et du mouvement latéral (Chapitre~\ref{chap:postexploit}), et des techniques d'évasion et d'anti-forensics (Chapitre~\ref{chap:evasion}).
+Elle traite des vulnérabilités et de leur exploitation
+(Chapitre~\ref{chap:exploit}), de la post-exploitation et du mouvement latéral
+(Chapitre~\ref{chap:postexploit}), et des techniques d'évasion et d'anti-forensics
+(Chapitre~\ref{chap:evasion}).
 
 \medskip
-\noindent\textbf{Partie III — Restitution et Évaluation}
+\noindent\textbf{Partie III, Restitution et Évaluation}
 
-Elle présente la rédaction du rapport de pentest (Chapitre~\ref{chap:reporting}) et l'évaluation finale de synthèse (Chapitre~\ref{chap:evaluation}).
+Elle présente la rédaction du rapport de pentest
+(Chapitre~\ref{chap:reporting}) et l'évaluation finale de synthèse
+(Chapitre~\ref{chap:evaluation}).
+
+\medskip
+\noindent\textbf{Partie IV, Modules Avancés (optionnels)}
+
+Ces modules traitent de la sécurité cloud (Chapitre~10), de la sécurité des
+\sigle{API} (Chapitre~11) et de la sécurité mobile (Chapitre~12). Ils sont
+conçus pour les étudiants souhaitant approfondir leur spécialisation ou se
+préparer aux certifications avancées (\sigle{CRTO}, \sigle{OSCP}).
+
+% ==============================================================================
+\section*{Alignement avec les Certifications Professionnelles}
+% ==============================================================================
+
+Ce cours prépare aux certifications professionnelles les plus reconnues dans le
+domaine du penetration testing et de la sécurité offensive. Bien que l'obtention
+de ces certifications nécessite un investissement personnel complémentaire, le
+contenu couvre une partie significative des objectifs d'examen de chacune d'elles.
+
+\begin{table}[htbp]
+\centering
+\caption{Certifications professionnelles alignées avec le cours}
+\label{tab:certifications}
+\begin{tabular}{llll}
+\toprule
+\textbf{Certification} & \textbf{Organisme} & \textbf{Niveau} & \textbf{Focus} \\
+\midrule
+OSCP   & Offensive Security & Technique    & Pentest pratique 24h \\
+CEH    & EC-Council         & Fondamental  & Knowledge-based \\
+GPEN   & GIAC/SANS          & Technique    & Méthodologie, outils \\
+CRTO   & Zero Point Security & Avancé      & Active Directory, C2 \\
+PNPT   & TCM Security       & Technique    & Pentest, AD, reporting \\
+CISA   & ISACA              & Gouvernance  & Audit SI, contrôles \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================================
+\section*{Environnement de Travail et Outils Requis}
+% ==============================================================================
+
+Pour suivre ce cours dans les meilleures conditions, les étudiants doivent disposer
+d'un environnement de laboratoire adéquat. Les machines virtuelles constituent le
+standard pour les exercices pratiques : elles isolent les activités offensives du
+système hôte et permettent de restaurer facilement un état propre après chaque
+session.
+
+\medskip
+\noindent\textbf{Configuration matérielle minimale recommandée :}
+\begin{itemize}
+    \item Processeur : 4 c\oe{}urs ou plus (virtualisation activée, \sigle{VT-x}
+          ou \sigle{AMD-V}).
+    \item \sigle{RAM} : 16 Go minimum (24 Go recommandés).
+    \item Stockage : 100 Go d'espace libre (\sigle{SSD} recommandé).
+    \item Réseau : accès Internet pour le téléchargement des outils et machines
+          virtuelles.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{Outils essentiels pour le cours}
+\label{tab:outils}
+\begin{tabular}{lll}
+\toprule
+\textbf{Catégorie} & \textbf{Outils} & \textbf{Usage} \\
+\midrule
+OS Attaquant     & Kali Linux 2024.x, Parrot OS    & Distribution pré-configurée \\
+Reconnaissance   & Nmap, Masscan, Shodan CLI        & Scanning et énumération \\
+Exploitation     & Metasploit, SQLMap, Burp Suite   & Exploitation de vulnérabilités \\
+Post-Exploitation & Mimikatz, BloodHound, CME       & Escalade, mouvement latéral \\
+Évasion / Pivot  & Msfvenom, Shellter, Chisel       & Obfuscation, pivoting \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ==============================================================================
 \section*{Avertissement Éthique et Légal}
@@ -80,25 +354,75 @@ Elle présente la rédaction du rapport de pentest (Chapitre~\ref{chap:reporting
 
 \begin{boxalert}
 \textbf{Avertissement important :}
-Les techniques présentées dans ce cours sont destinées exclusivement à être utilisées dans des environnements de laboratoire isolés ou sur des systèmes pour lesquels vous disposez d'une \textbf{autorisation écrite et explicite}. L'application de ces techniques sur tout système tiers sans autorisation constitue une \textbf{infraction pénale} passible de poursuites judiciaires. L'auteur et l'institution déclinent toute responsabilité en cas d'utilisation illégale ou malveillante des connaissances transmises.
+Les techniques présentées dans ce cours sont destinées \textbf{exclusivement} à
+être utilisées dans des environnements de laboratoire isolés ou sur des systèmes
+pour lesquels vous disposez d'une \textbf{autorisation écrite et explicite}.
+L'application de ces techniques sur tout système tiers sans autorisation constitue
+une \textbf{infraction pénale} passible de poursuites judiciaires. L'auteur et
+l'institution déclinent toute responsabilité en cas d'utilisation illégale ou
+malveillante des connaissances transmises.
+
+\smallskip
+\noindent\textbf{Cadre légal de référence :} Le Chapitre~\ref{chap:02_cadre_juridique}
+détaille les dispositions pénales applicables, incluant le Code pénal français
+(Articles 323-1 à 323-7, loi Godfrain) ainsi que la \textbf{loi camerounaise
+n\textsuperscript{o}~2010/012 du 21~décembre~2010} relative à la cybersécurité
+et à la cybercriminalité, et la loi n\textsuperscript{o}~2010/013 sur les
+communications électroniques. L'\sigle{ANTIC} (Agence Nationale des Technologies
+de l'Information et de la Communication) est l'autorité de régulation compétente
+en matière de cybersécurité au Cameroun.
 \end{boxalert}
 
 \begin{boxinfo}
 \textbf{Prérequis recommandés :}
 \begin{itemize}
-    \item Connaissance des protocoles réseau (TCP/IP, DNS, HTTP, SMB).
-    \item Bases du système Linux (navigation en ligne de commande, droits, scripts).
-    \item Connaissance de l'environnement Windows (Active Directory, Registre, Services).
-    \item Notions de programmation (Python, Bash) appréciées.
-    \item Cours d'Audit des SI recommandé en préalable.
+    \item Connaissance approfondie des protocoles réseau
+          (TCP/IP, DNS, HTTP/HTTPS, SMB, LDAP, Kerberos).
+    \item Maîtrise du système Linux (navigation \sigle{CLI}, gestion des droits,
+          scripting Bash).
+    \item Connaissance de l'environnement Windows (Active Directory, Registre,
+          Services, PowerShell).
+    \item Notions de programmation (Python, PowerShell), capacité à lire et
+          modifier des scripts existants.
+    \item Compréhension des architectures web (HTTP, \sigle{API} REST, bases de
+          données).
+    \item Cours d'Audit des \sigle{SI} recommandé en préalable.
+    \item Familiarité avec les machines virtuelles (VMware, VirtualBox).
 \end{itemize}
 \end{boxinfo}
 
-\vspace{2ex}
+% ==============================================================================
+\section*{Mot de l'Auteur}
+% ==============================================================================
+
+\vspace{1ex}
 \begin{center}
-    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}\\[0.8ex]
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}
+\end{center}
+\vspace{1ex}
+
+Ce cours a été conçu avec la conviction que comprendre l'attaque est la condition
+nécessaire à une défense crédible. La sécurité n'est pas un état statique mais un
+processus continu d'amélioration, de vigilance et d'adaptation. Les techniques
+présentées ici évolueront, c'est la nature même de la cybersécurité, mais les
+principes méthodologiques, éthiques et juridiques qui les encadrent demeurent les
+piliers d'une pratique professionnelle responsable.
+
+À ceux qui emprunteront ce chemin : la compétence technique n'est qu'un outil.
+Ce qui distingue le professionnel du vandale, c'est l'éthique qui guide l'action,
+la rigueur qui structure le travail, et l'humilité face à l'immensité de ce qu'il
+reste à apprendre. Le pentester professionnel est, en définitive, un avocat du
+diable au service de la sécurité : il incarne temporairement l'adversaire pour
+mieux armer l'organisation contre lui.
+
+\vspace{1.5ex}
+\begin{center}
+    {\small\bfseries\color{CouleurPrimaire}\auteurcours}\\[0.4ex]
     {\small\itshape\color{CouleurPrimaire}
-        Ce cours a été conçu avec la conviction que comprendre l'attaque\\
-        est la condition nécessaire à une défense crédible.}\\[0.5ex]
-    {\small\bfseries\color{CouleurPrimaire}\auteurcours}
+        Chercheur, \sigle{LIMSI}, \sigle{ENSP}, Université de Yaoundé~I}\\[0.3ex]
+    {\footnotesize\color{CouleurPrimaire}
+        \sigle{CISA} · \sigle{CISM} · \sigle{CGEIT} · \sigle{CRISC} ·
+        \sigle{CDPSE} · ISO~27001 · ISO~22301 · ISO~9001}
+    \\[0.8ex]
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}
 \end{center}
