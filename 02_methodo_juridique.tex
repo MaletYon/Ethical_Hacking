@@ -1,115 +1,557 @@
 % ==============================================================================
-% Fichier : 02_methodo_juridique.tex
-% Description : Cadre Juridique et Méthodologies de Tests d'Intrusion
+% Fichier     : chapitres/02_methodo_juridique.tex
+% Titre       : Cadre Juridique et Méthodologies de Tests d'Intrusion
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
 % ==============================================================================
 
 \chapter{Cadre Juridique et Méthodologies de Tests d'Intrusion}
+\label{chap:02_cadre_juridique}
 
-Le Hacking Éthique n'est pas une absence de règles, mais une pratique strictement encadrée. Ce chapitre détaille les limites légales à ne jamais franchir et les standards méthodologiques à suivre pour garantir la qualité d'une mission.
+Le Hacking Éthique n'est pas une absence de règles, mais une pratique strictement
+encadrée. Ce chapitre détaille les limites légales à ne jamais franchir, tant dans
+le droit français que dans le droit camerounais, et les standards méthodologiques
+à suivre pour garantir la qualité et la valeur probatoire d'une mission.
 
-\section{Le Cadre Juridique (Loi et Déontologie)}
-% ------------------------------------------------------------------------------
+% ==============================================================================
+\section{Le Cadre Juridique}
+\label{sec:cadre_juridique}
+% ==============================================================================
 
-\subsection{La Loi Informatique et Libertés (France)}
+\subsection{Droit Français : La Loi Godfrain}
+\label{subsec:loi_godfrain}
 
-En France, le cadre légal principal est défini par le Code pénal (Articles 323-1 à 323-7), souvent appelé "Loi Godfrain".
+En France, le cadre légal principal est défini par le \textbf{Code pénal}
+(Articles 323-1 à 323-7), communément appelé \termecle{Loi Godfrain} (du nom
+du parlementaire qui en fut le rapporteur, 1988).
 
 \begin{boxalert}
-\textbf{Attention :} Sans autorisation écrite préalable, toute intrusion, même sans malveillance, est un délit passible de 2 ans d'emprisonnement et 30 000€ d'amende (jusqu'à 5 ans et 150 000€ si accés à des données traitées automatiquement).
+\textbf{Régime de sanctions, Code pénal français :}
+\begin{itemize}
+    \item \textbf{Accès ou maintien frauduleux} (Art.~323-1) : jusqu'à
+          2~ans d'emprisonnement et 30\,000~€ d'amende ;
+          jusqu'à 3~ans et 45\,000~€ si cela a entraîné modification
+          ou suppression de données.
+    \item \textbf{Entrave au fonctionnement} (Art.~323-2) : jusqu'à
+          5~ans et 150\,000~€ d'amende.
+    \item \textbf{Introduction frauduleuse de données} (Art.~323-3) :
+          jusqu'à 5~ans et 150\,000~€.
+    \item \textbf{Circonstances aggravantes} (Art.~323-4 à 323-7) :
+          peines doublées en cas d'organisation criminelle ou d'atteinte
+          à un \sigle{SIIV} (Système d'Information d'Importance Vitale).
+\end{itemize}
+\textit{Sans autorisation écrite préalable, toute intrusion, même
+sans intention malveillante, constitue un délit.}
 \end{boxalert}
 
-\subsection{Les Trois Conditions de Légalité}
+\subsection{Droit Camerounais : Loi sur la Cybersécurité}
+\label{subsec:loi_cameroun}
 
-Pour qu'un test d'intrusion soit légal, trois conditions cumulatives doivent être remplies :
-\begin{enumerate}
-    \item \textbf{Autorisation Expresse :} Un document écrit (Contrat, Lettre de mission) signé par le propriétaire du système ou son mandataire.
-    \item \textbf{Définition du Périmètre :} L'autorisation doit spécifier quelles machines, plages IP ou applications sont testées. "Tester tout le réseau" est trop vague et dangereux juridiquement.
-    \item \textbf{Respect des Règles d'Engagement :} Respecter les horaires, les méthodes interdites (DoS) et les cibles exclues.
-\end{enumerate}
+Dans le contexte africain francophone, et en particulier au Cameroun, le cadre
+légal de référence est défini par deux textes complémentaires.
 
-\subsection{Déontologie du Hacker Éthique}
+\begin{boxalert}
+\textbf{Régime de sanctions, Droit camerounais :}
 
-L'éthique distingue le professionnel du vandale.
+\medskip
+\textbf{Loi n\textsuperscript{o}~2010/012 du 21~décembre~2010} relative à la
+cybersécurité et à la cybercriminalité :
 \begin{itemize}
-    \item \textbf{Confidentialité :} Les données découvertes (salaires, stratégie, secrets industriels) ne doivent jamais être divulguées.
-    \item \textbf{Intégrité :} Ne pas détruire de données, ne pas installer de backdoors persistantes sans accord.
-    \item \textbf{Rendu (Reporting) :} L'objectif est d'aider le client à se sécuriser, pas de prouver sa supériorité technique.
+    \item \textbf{Accès non autorisé à un système} (Art.~72) : jusqu'à
+          2~ans d'emprisonnement et 5~000\,000~FCFA d'amende.
+    \item \textbf{Atteinte à l'intégrité d'un système} (Art.~73) :
+          jusqu'à 5~ans et 10\,000\,000~FCFA.
+    \item \textbf{Interception illégale de données} (Art.~74) :
+          jusqu'à 2~ans et 5\,000\,000~FCFA.
+    \item \textbf{Circonstances aggravantes} : peines doublées lorsque
+          les faits sont commis contre des infrastructures d'État ou des
+          systèmes financiers.
 \end{itemize}
 
-% ------------------------------------------------------------------------------
-\section{Méthodologies Standardisées}
-% ------------------------------------------------------------------------------
+\medskip
+\textbf{Loi n\textsuperscript{o}~2010/013 du 21~décembre~2010} sur les
+communications électroniques : encadre les obligations des opérateurs
+et prestataires de services numériques ; toute prestation de sécurité
+doit être déclarée à l'\sigle{ANTIC}.
 
-Ne pas utiliser de méthodologie, c'est risquer d'oublier des failles critiques. Trois standards dominent l'industrie.
+\medskip
+\textbf{Autorité de régulation :} l'\sigle{ANTIC} (Agence Nationale des
+Technologies de l'Information et de la Communication) est l'organisme
+compétent en matière de cybersécurité au Cameroun. Toute mission de
+pentest réalisée dans un cadre professionnel au Cameroun doit, selon les
+cas, faire l'objet d'une déclaration préalable.
+\end{boxalert}
 
-\subsection{PTES (Penetration Testing Execution Standard)}
+\subsection{Tableau Comparatif France / Cameroun}
+\label{subsec:comparatif}
 
-C'est la méthodologie la plus utilisée pour les tests techniques. Elle divise le pentest en 7 phases :
+\begin{table}[htbp]
+\centering
+\caption{Comparatif des régimes juridiques applicables au pentest}
+\label{tab:comparatif_juridique}
+\begin{tabular}{p{3.8cm}p{4.8cm}p{4.8cm}}
+\toprule
+\textbf{Critère}
+    & \textbf{France (Loi Godfrain)}
+    & \textbf{Cameroun (Loi 2010/012)} \\
+\midrule
+Texte de référence
+    & Code pénal, Art.~323-1 à 323-7
+    & Loi n\textsuperscript{o}~2010/012 \\
+\addlinespace
+Accès non autorisé
+    & 2~ans / 30\,000~€
+    & 2~ans / 5\,000\,000~FCFA \\
+\addlinespace
+Atteinte à l'intégrité
+    & 5~ans / 150\,000~€
+    & 5~ans / 10\,000\,000~FCFA \\
+\addlinespace
+Autorité de régulation
+    & ANSSI
+    & ANTIC \\
+\addlinespace
+Déclaration obligatoire
+    & Non (sauf \sigle{SIIV})
+    & Selon nature de la prestation \\
+\addlinespace
+Condition de légalité
+    & Autorisation écrite + périmètre
+    & Autorisation écrite + déclaration ANTIC \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxinfo}
+\textbf{Application pratique pour le cours :}
+Les travaux pratiques de ce cours sont réalisés sur un environnement de
+laboratoire totalement isolé. Ils ne sont soumis à aucune des obligations
+déclaratives mentionnées ci-dessus. En revanche, tout étudiant réalisant
+une mission de pentest professionnelle au Cameroun est tenu de connaître
+et respecter le cadre de la loi 2010/012 et les exigences de l'\sigle{ANTIC}.
+\end{boxinfo}
+
+% ==============================================================================
+\section{Les Trois Conditions Cumulatives de Légalité}
+\label{sec:conditions_legalite}
+% ==============================================================================
+
+Quelle que soit la juridiction applicable, la légalité d'un test d'intrusion
+repose sur trois conditions \textbf{cumulatives}, l'absence de l'une suffit à
+caractériser l'infraction.
 
 \begin{enumerate}
-    \item \textbf{Pre-Engagement Interactions :} Signature du contrat, définition du scope.
-    \item \textbf{Intelligence Gathering (Recon) :} Collecte d'infos passive et active.
-    \item \textbf{Threat Modeling :} Identifier les menaces les plus probables pour cette cible spécifique.
-    \item \textbf{Vulnerability Analysis :} Découverte des failles.
-    \item \textbf{Exploitation :} Exploitation des failles pour prouver l'impact.
-    \item \textbf{Post-Exploitation :} Valeur de la cible compromise, pivot, élévation de privilèges.
-    \item \textbf{Reporting :} Rédaction du rapport final.
+    \item \textbf{Autorisation expresse et écrite :} Un document contractuel
+          (lettre de mission, bon de commande, avenant) signé par le
+          \textbf{propriétaire légitime} du système ou son mandataire dûment
+          habilité. Une autorisation verbale n'a aucune valeur juridique.
+
+    \item \textbf{Définition précise du périmètre :} L'autorisation doit
+          spécifier exactement quelles machines, plages \sigle{IP}, applications
+          ou services sont testés. La formulation \og{}tester tout le réseau\fg{}
+          est trop vague et ne protège pas le pentester : si une machine
+          hors-périmètre est atteinte par rebond, l'infraction est constituée.
+
+    \item \textbf{Respect des Règles d'Engagement :} Respecter scrupuleusement
+          les horaires, les méthodes interdites (DoS, destruction de données)
+          et les cibles exclues définies dans le document \sigle{ROE} signé
+          (voir Section~\ref{sec:roe}).
 \end{enumerate}
 
-\subsection{OSSTMM (Open Source Security Testing Methodology Manual)}
+\begin{boxinfo}
+\textbf{Cas particulier, Bug Bounty :} Les programmes de \textit{bug bounty}
+(HackerOne, Bugcrowd) constituent une forme d'autorisation implicite encadrée
+par les \textit{Terms of Service} du programme. Ils ne dispensent pas du
+respect des conditions 2 et 3 : le périmètre (\textit{in-scope assets}) et
+les règles d'engagement sont définis dans le programme et s'imposent au
+chercheur.
+\end{boxinfo}
 
-Plus théorique et exhaustive. Elle se concentre sur la \textbf{rigueur scientifique} de l'audit et les métriques (calcul de la surface d'attaque). Elle est souvent utilisée pour des audits physiques ou humains en plus de l'informatique.
+% ==============================================================================
+\section{Déontologie du Hacker Éthique}
+\label{sec:deontologie}
+% ==============================================================================
+
+L'éthique professionnelle est ce qui distingue le pentester du cybercriminel.
+Elle ne se réduit pas à respecter la loi, elle impose des obligations positives
+vis-à-vis du client, des tiers et de la profession.
+
+\begin{itemize}
+    \item \textbf{Confidentialité :} Les données collectées lors de la mission
+          (mots de passe, données personnelles, stratégie commerciale, secrets
+          industriels) ne doivent \textbf{jamais} être divulguées, conservées
+          après la mission ou utilisées à des fins personnelles. L'accord de
+          confidentialité (\sigle{NDA}) est obligatoire.
+
+    \item \textbf{Intégrité :} Ne pas détruire de données, ne pas modifier les
+          configurations au-delà de ce qui est nécessaire à la démonstration,
+          ne pas installer de \textit{backdoors} persistantes sans accord
+          contractuel explicite.
+
+    \item \textbf{Divulgation responsable (\textit{Responsible Disclosure}) :}
+          Si une vulnérabilité critique est découverte sur un système hors
+          périmètre (par rebond), le pentester a l'obligation déontologique —
+          et parfois légale, d'en informer le propriétaire concerné, via
+          un processus de divulgation coordonnée, sans l'exploiter.
+
+    \item \textbf{Non-nuisance :} Le pentester doit évaluer le risque de chaque
+          action avant de l'exécuter. Une exploitation qui risque de rendre
+          un service indisponible doit être discutée avec le client avant
+          d'être tentée, même si elle est techniquement \textit{in-scope}.
+
+    \item \textbf{Objectivité du rapport :} L'objectif est d'aider le client
+          à se sécuriser, non de démontrer sa propre expertise technique. Un
+          rapport qui gonfle la criticité des vulnérabilités pour impressionner
+          est contraire à l'éthique professionnelle.
+
+    \item \textbf{Formation continue :} Le professionnel est responsable de
+          maintenir ses compétences à jour. Utiliser des techniques obsolètes
+          ou passer à côté de vecteurs d'attaque actuels constitue un manque
+          à son obligation de moyens vis-à-vis du client.
+\end{itemize}
+
+% ==============================================================================
+\section{Méthodologies Standardisées}
+\label{sec:methodologies}
+% ==============================================================================
+
+Ne pas utiliser de méthodologie formalisée, c'est risquer d'oublier des failles
+critiques et de produire un rapport non défendable devant un client exigeant.
+Cinq standards structurent aujourd'hui l'industrie du pentest.
+
+\subsection{PTES, \textit{Penetration Testing Execution Standard}}
+\label{subsec:ptes}
+
+\sigle{PTES} est la méthodologie la plus utilisée pour les tests techniques.
+Elle divise le pentest en \textbf{7~phases} et constitue le fil conducteur de
+ce cours.
+
+\begin{table}[htbp]
+\centering
+\caption{Phases PTES avec mapping MITRE ATT\&CK et chapitres du cours}
+\label{tab:ptes_mitre}
+\begin{tabular}{p{0.4cm}p{3.5cm}p{3.5cm}p{5cm}}
+\toprule
+\textbf{\#} & \textbf{Phase PTES} & \textbf{MITRE ATT\&CK} & \textbf{Chapitre du cours} \\
+\midrule
+1 & \textit{Pre-Engagement}
+  & N/A
+  & Chap.~\ref{chap:mandat} (ROE, scope) \\
+\addlinespace
+2 & \textit{Intelligence Gathering}
+  & TA0043 Reconnaissance
+  & Chap.~\ref{chap:osint} (OSINT) \\
+\addlinespace
+3 & \textit{Threat Modeling}
+  & TA0043, TA0042
+  & Chap.~\ref{chap:osint} (modélisation) \\
+\addlinespace
+4 & \textit{Vulnerability Analysis}
+  & TA0043
+  & Chap.~\ref{chap:scanning} (scanning) \\
+\addlinespace
+5 & \textit{Exploitation}
+  & TA0001, TA0002
+  & Chap.~\ref{chap:exploit} \\
+\addlinespace
+6 & \textit{Post-Exploitation}
+  & TA0003--TA0010
+  & Chap.~\ref{chap:postexploit}, \ref{chap:evasion} \\
+\addlinespace
+7 & \textit{Reporting}
+  & N/A
+  & Chap.~\ref{chap:reporting} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{OSSTMM, \textit{Open Source Security Testing Methodology Manual}}
+\label{subsec:osstmm}
+
+Plus théorique et exhaustive que \sigle{PTES}, l'\sigle{OSSTMM} se concentre
+sur la \textbf{rigueur scientifique} de l'audit et la mesure quantitative de
+la surface d'attaque (\textit{Attack Surface}). Elle introduit le concept de
+\termecle{RAV} (\textit{Risk Assessment Value}), permettant de calculer un
+score de sécurité objectif et reproductible. Elle couvre également les vecteurs
+non-informatiques : sécurité physique, ingénierie sociale, sécurité des
+télécommunications. Elle est souvent privilégiée pour les audits complets
+d'une organisation.
 
 \subsection{NIST SP 800-115}
+\label{subsec:nist}
 
-Guide technique du NIST (National Institute of Standards and Technology) américain. Très structuré, il est souvent exigé pour les organismes publics ou les contrats gouvernementaux.
+Guide technique du \sigle{NIST} (\textit{National Institute of Standards and
+Technology}) américain. Très structuré, il est souvent contractuellement exigé
+pour les organismes publics américains ou les prestataires soumis aux exigences
+\sigle{FedRAMP}/\sigle{FISMA}. Sa Section~3 sur la planification et la Section~7
+sur la production du rapport sont applicables universellement et constituent
+d'excellentes références.
 
-% ------------------------------------------------------------------------------
-\section{Types de Tests (Boîtes)}
-% ------------------------------------------------------------------------------
+\subsection{OWASP, \textit{Open Web Application Security Project}}
+\label{subsec:owasp}
 
-Le niveau d'information fourni au pentester définit le type de test.
+L'\sigle{OWASP} publie deux documents complémentaires qu'il faut impérativement
+distinguer :
 
-\begin{table}[h!]
+\begin{itemize}
+    \item \textbf{OWASP Top~10} : liste des dix catégories de vulnérabilités
+          Web les plus critiques, mise à jour périodiquement (dernière édition :
+          2021). C'est un \textbf{référentiel de sensibilisation}, non un guide
+          opérationnel. Il sera utilisé au Chapitre~\ref{chap:exploit}.
+
+    \item \textbf{OWASP Testing Guide v4.2} (\sigle{OTG}) : guide opérationnel
+          de plus de 500~pages détaillant les procédures de test pour chaque
+          catégorie de vulnérabilité. C'est la référence technique pour les
+          tests d'applications web, il précise \textit{comment} tester, pas
+          seulement \textit{quoi} chercher. Indispensable pour les missions
+          de pentest applicatif.
+\end{itemize}
+
+\subsection{MITRE ATT\&CK}
+\label{subsec:mitre}
+
+Bien que \sigle{MITRE ATT\&CK} ne soit pas une méthodologie de pentest à
+proprement parler, il s'est imposé comme le \textbf{langage universel} de
+description des techniques d'attaque. Son utilisation dans ce cours est
+systématique : chaque technique présentée est accompagnée de son identifiant
+\sigle{ATT\&CK} (ex.~: T1190, T1558.003), facilitant la communication avec
+les équipes de défense et la production de rapports compréhensibles par les
+équipes \sigle{SOC}.
+
+\begin{boxinfo}
+\textbf{Structure MITRE ATT\&CK :} Le framework est organisé en
+\textbf{14~tactiques} (le \textit{pourquoi} de l'action), chacune
+décomposée en \textbf{techniques} (le \textit{comment}) et
+\textbf{sous-techniques} (les variantes précises). Exemple :
+\textit{Tactique}~TA0006 (Credential Access) →
+\textit{Technique}~T1003 (OS Credential Dumping) →
+\textit{Sous-technique}~T1003.001 (LSASS Memory), ce qui correspond
+à l'utilisation de Mimikatz au Chapitre~\ref{chap:postexploit}.
+\end{boxinfo}
+
+% ==============================================================================
+\section{Types de Tests d'Intrusion}
+\label{sec:types_tests}
+% ==============================================================================
+
+Le niveau d'information fourni au pentester avant la mission définit le
+\termecle{type de test} et la nature de la menace simulée.
+
+\begin{table}[htbp]
 \centering
-\begin{tabular}{p{3cm}p{5cm}p{4cm}}
-    \toprule
-    \textbf{Type} & \textbf{Information fournie} & \textbf{Simulation} \\
-    \midrule
-    \textbf{Black Box} & Aucune information (0 knowledge). & Attaque externe par un inconnu. \\
-    \textbf{Gray Box} & Informations partielles (ex: compte utilisateur standard). & Attaque d'un employé malveillant ou partenaire. \\
-    \textbf{White Box} & Accès total (Code source, schémas réseau, comptes admin). & Audit de code ou revue de sécurité approfondie. \\
-    \bottomrule
-\end{tabular}
 \caption{Types de tests d'intrusion}
+\label{tab:types_tests}
+\begin{tabular}{p{2.2cm}p{3.8cm}p{3.8cm}p{3cm}}
+\toprule
+\textbf{Type}
+    & \textbf{Information fournie}
+    & \textbf{Menace simulée}
+    & \textbf{Usage typique} \\
+\midrule
+\textbf{Black Box}
+    & Aucune (0~knowledge), seule la cible est connue
+    & Attaquant externe inconnu, cybercriminel opportuniste
+    & Test périmétrique, audit externe \\
+\addlinespace
+\textbf{Gray Box}
+    & Partielle, compte utilisateur standard, plages IP
+    & Insider malveillant, partenaire compromis, attaquant post-phishing
+    & Audit interne, simulation réaliste \\
+\addlinespace
+\textbf{White Box}
+    & Totale, code source, schémas réseau, comptes admin
+    & Auditeur interne, développeur malveillant
+    & Audit de code, revue d'architecture \\
+\addlinespace
+\textbf{Crystal Box}
+    & Totale + accès collaboratif aux équipes internes
+    & N/A (mode coopératif)
+    & Red Team / Blue Team conjoint \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{boxlizbiz}
 \textbf{Choix pour LiZbiZ :}
-La direction a choisi un test \textbf{Gray Box}. Vous disposez d'un compte utilisateur standard ("stagiaire") sur l'intranet. Cela permet de simuler une attaque interne sans perdre de temps à deviner les adresses IP (Black Box). L'objectif est de voir si un employé peu qualifié peut compromettre l'entreprise.
+La direction a opté pour un test \textbf{Gray Box}. Vous disposez d'un compte
+utilisateur standard (\og{}stagiaire\fg{}) sur l'intranet, simulant un employé
+peu qualifié ou un attaquant ayant réussi un phishing initial. Cette configuration
+est la plus représentative des scénarios réels : selon les statistiques \sigle{DBIR}
+(Verizon Data Breach Investigations Report), plus de 74\% des compromissions
+impliquent un facteur humain en phase initiale.
 \end{boxlizbiz}
 
-% ------------------------------------------------------------------------------
-\section{Les Phases Détaillées (Cycle de Vie)}
-% ------------------------------------------------------------------------------
+% ==============================================================================
+\section{Le Cycle de Vie d'une Attaque}
+\label{sec:cycle_vie}
+% ==============================================================================
 
-Indépendamment de la méthodologie, le cycle de vie suit toujours ce flux logique :
+Indépendamment de la méthodologie choisie, le cycle de vie d'une intrusion suit
+toujours un flux logique. La compréhension de ce cycle est fondamentale : elle
+permet au pentester d'anticiper les actions suivantes et au défenseur de placer
+ses contrôles aux points de rupture les plus efficaces.
 
-\begin{figure}[h!]
+\begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[node distance=2cm]
-    \node (recon) [draw, rounded corners] {Reconnaissance};
-    \node (scan) [draw, rounded corners, right=of recon] {Scanning};
-    \node (exploit) [draw, rounded corners, below=of scan] {Exploitation};
-    \node (maintain) [draw, rounded corners, left=of exploit] {Maintien Accès};
-    \node (cover) [draw, rounded corners, left=of maintain] {Couverture Traces};
-    
-    \draw[->, thick] (recon) -- (scan);
-    \draw[->, thick] (scan) -- (exploit);
-    \draw[->, thick] (exploit) -- (maintain);
-    \draw[->, thick] (maintain) -- (cover);
-    % Loop
-    \draw[->, thick, dashed] (maintain) to[bend right=60] node[below] {Nouvelle info} (recon);
+\begin{tikzpicture}[
+    node distance = 1.5cm and 2.4cm,
+    phase/.style  = {
+        rectangle, draw, thick, rounded corners=6pt,
+        minimum width=2.8cm, minimum height=1cm,
+        align=center, font=\small\bfseries
+    },
+    ta/.style = {
+        font=\tiny, text=gray, align=center
+    }
+]
+    % Nœuds, deux rangées
+    \node[phase, fill=blue!10]   (recon)    {Reconnaissance\\{\tiny TA0043}};
+    \node[phase, fill=blue!15,   right=of recon]  (scan)     {Scanning\\{\tiny TA0043}};
+    \node[phase, fill=orange!20, right=of scan]   (exploit)  {Exploitation\\{\tiny TA0001-02}};
+    \node[phase, fill=red!15,    below=of exploit] (postex)   {Post-Exploitation\\{\tiny TA0003-08}};
+    \node[phase, fill=red!10,    left=of postex]  (maintain) {Maintien d'Accès\\{\tiny TA0003}};
+    \node[phase, fill=gray!20,   left=of maintain] (cover)    {Couverture\\des Traces\\{\tiny TA0005}};
+
+    % Flèches principales
+    \draw[->, thick] (recon)   -- (scan);
+    \draw[->, thick] (scan)    -- (exploit);
+    \draw[->, thick] (exploit) -- (postex);
+    \draw[->, thick] (postex)  -- (maintain);
+    \draw[->, thick] (maintain)-- (cover);
+
+    % Boucle : nouvelle info remonte à la reconnaissance
+    \draw[->, thick, dashed, CouleurAccent]
+        (maintain.south)
+        to[bend right=45]
+        node[below, font=\footnotesize\itshape] {nouvelle info}
+        (recon.south);
 \end{tikzpicture}
-\caption{Cycle de vie d'une attaque}
+\caption{Cycle de vie d'une attaque, phases et tactiques MITRE ATT\&CK associées}
+\label{fig:cycle_vie}
 \end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Correspondance phases du cycle de vie et chapitres du cours}
+\label{tab:cycle_chapitres}
+\begin{tabular}{p{3.2cm}p{3cm}p{6.5cm}}
+\toprule
+\textbf{Phase} & \textbf{MITRE ATT\&CK} & \textbf{Outils / Techniques clés} \\
+\midrule
+Reconnaissance
+    & TA0043
+    & Whois, dig, Shodan, Google Dorks, theHarvester \\
+\addlinespace
+Scanning
+    & TA0043
+    & Nmap, Dirb, Nikto, Nessus/OpenVAS \\
+\addlinespace
+Exploitation
+    & TA0001, TA0002
+    & SQLMap, Metasploit, Hydra, EternalBlue \\
+\addlinespace
+Post-Exploitation
+    & TA0003--TA0008
+    & Mimikatz, BloodHound, CrackMapExec, Chisel \\
+\addlinespace
+Maintien d'Accès
+    & TA0003
+    & \textit{Web Shell}, tâches planifiées, persistance AD \\
+\addlinespace
+Couverture des Traces
+    & TA0005
+    & Wevtutil, \textit{timestomping}, techniques \textit{fileless} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{Illustration LiZbiZ, lecture du cycle :}
+\begin{enumerate}
+    \item \textbf{Reconnaissance} : collecte OSINT révèle
+          \texttt{admin@lizbiz.com} et un Apache~2.2.22 non patché.
+    \item \textbf{Scanning} : Nmap confirme le port~80 ouvert ; Dirb découvre
+          \texttt{/backup/old\_passwd.txt}.
+    \item \textbf{Exploitation} : injection SQL sur le formulaire de connexion
+          + exploitation \texttt{MS17-010} sur le poste Windows interne.
+    \item \textbf{Post-Exploitation} : escalade via \texttt{sudo vim},
+          dump Mimikatz, Pass-the-Hash vers le \sigle{DC}.
+    \item \textbf{Maintien d'Accès} : dépôt d'un \textit{web shell} \sigle{PHP}
+          sur le serveur \sigle{DMZ} (simulé uniquement).
+    \item \textbf{Couverture} : effacement des logs documenté dans le rapport
+          (non exécuté en conditions réelles sans accord client).
+\end{enumerate}
+\end{boxlizbiz}
+
+% ==============================================================================
+\section*{Points Clés à Retenir}
+% ==============================================================================
+
+\begin{boxinfo}
+\textbf{Ce qu'il faut retenir de ce chapitre :}
+\begin{enumerate}
+    \item La légalité d'un pentest repose sur \textbf{trois conditions
+          cumulatives} : autorisation écrite, périmètre précis, respect
+          des ROE.
+    \item Le cadre camerounais (loi 2010/012) impose des sanctions comparables
+          au droit français et exige une \textbf{connaissance de l'\sigle{ANTIC}}
+          pour les missions professionnelles.
+    \item \textbf{PTES} structure les 7~phases ; \textbf{MITRE ATT\&CK} en
+          fournit le vocabulaire universel.
+    \item \textbf{OWASP Top~10} ≠ \textbf{OWASP Testing Guide} : le premier
+          liste les risques, le second explique comment les tester.
+    \item Le type de test (\textit{Black/Gray/White Box}) détermine la menace
+          simulée et le périmètre de connaissance du pentester.
+    \item La déontologie (\sigle{NDA}, divulgation responsable,
+          non-nuisance) est aussi contraignante que la loi.
+\end{enumerate}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Exercice Pratique}
+% ==============================================================================
+
+\begin{boxexo}
+\textbf{Exercice 2.1, Analyse d'un cas juridique}
+
+\medskip
+\textbf{Scénario :} Un consultant en sécurité reçoit un email de la part d'un
+\sigle{DSI} lui demandant verbalement de tester la sécurité du site web de son
+entreprise. Il procède au scan et découvre une injection SQL critique.
+Cependant, le scan a également atteint un sous-domaine hébergé chez un
+prestataire tiers.
+
+\medskip
+\textbf{Questions :}
+\begin{enumerate}
+    \item Quelle(s) condition(s) de légalité manquent dans ce scénario ?
+    \item Quelles infractions le consultant risque-t-il au regard du Code pénal
+          français ? Et de la loi camerounaise 2010/012 ?
+    \item Que doit faire le consultant concernant la vulnérabilité découverte
+          sur le sous-domaine tiers ?
+    \item Rédigez en 10~lignes la clause d'autorisation minimale qui aurait
+          permis d'éviter ce problème.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable :} Réponses argumentées + clause rédigée (à déposer
+avant le début du TP Chapitre~\ref{chap:osint}).
+\end{boxexo}
+
+\begin{boxexo}
+\textbf{Exercice 2.2, Mapping MITRE ATT\&CK}
+
+\medskip
+Pour chacune des techniques suivantes, identifier la tactique MITRE ATT\&CK
+parente, l'identifiant de technique et de sous-technique (si applicable), et
+le chapitre du cours où elle est traitée :
+\begin{enumerate}
+    \item Extraction de mots de passe depuis la mémoire \sigle{LSASS}.
+    \item Exploitation d'une injection SQL pour accéder à la base de données.
+    \item Utilisation de \texttt{certutil.exe} pour télécharger un fichier.
+    \item Kerberoasting sur un compte de service Active Directory.
+    \item Effacement du journal de sécurité Windows.
+\end{enumerate}
+
+\medskip
+\textbf{Ressource :} \texttt{https://attack.mitre.org}
+\end{boxexo}
