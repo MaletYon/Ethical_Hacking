@@ -1,7 +1,8 @@
 % ==============================================================================
 % Fichier     : chapitres/00_Conclusion.tex
-% Titre       : Conclusion Générale — Cours de Hacking Éthique
+% Titre       : Conclusion Générale, Cours de Hacking Éthique
 % Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
+
 % ==============================================================================
 
 \chapter*{Conclusion Générale}
@@ -20,24 +21,72 @@
 \section*{Ce que Vous Avez Appris}
 % ==============================================================================
 
-Au terme de ce parcours offensif, vous avez traversé l'intégralité de la chaîne d'attaque qui structure le métier de pentester — de la toute première requête DNS passive jusqu'à la remise du rapport contradictoire. Ce cheminement révèle une vérité fondamentale que seule la pratique peut enseigner : \textit{une infrastructure n'est jamais plus solide que son maillon le plus faible}, et ce maillon n'est presque jamais là où on l'attend.
+Au terme de ce parcours offensif, vous avez traversé l'intégralité de la
+chaîne d'attaque qui structure le métier de pentester, de la toute première
+requête \sigle{DNS} passive jusqu'à la remise du rapport contradictoire avec
+plan de remédiation priorisé. Ce cheminement révèle une vérité fondamentale
+que seule la pratique peut enseigner : \textit{une infrastructure n'est
+jamais plus solide que son maillon le plus faible}, et ce maillon n'est
+presque jamais là où on l'attend.
 
-Vous avez compris que le hacking éthique n'est pas une collection de « tricks » techniques, mais une \textbf{discipline intellectuelle structurée} : observer avant d'agir, documenter chaque pas, mesurer l'impact réel avant de l'exposer, et toujours replacer la technique dans son contexte métier. La valeur d'un pentest se mesure moins au nombre de shells obtenus qu'à la clarté des recommandations transmises à la direction.
+Vous avez compris que le hacking éthique n'est pas une collection de
+\og{}tricks\fg{} techniques, mais une \textbf{discipline intellectuelle
+structurée} : observer avant d'agir, documenter chaque pas, mesurer l'impact
+réel avant de l'exposer, et toujours replacer la technique dans son contexte
+métier. La valeur d'un pentest se mesure moins au nombre de shells obtenus
+qu'à la clarté des recommandations transmises à la direction.
 
 % ==============================================================================
 \section*{Synthèse du Parcours d'Attaque LiZbiZ}
 % ==============================================================================
 
 \begin{boxresume}
-Le scénario LiZbiZ aura illustré, de bout en bout, un cycle d'attaque complet :
+\textbf{Le scénario LiZbiZ a illustré, de bout en bout, un cycle d'attaque
+complet en 8 phases, avec mapping MITRE ATT\&CK :}
 
 \begin{enumerate}
-    \item \textbf{Reconnaissance OSINT} — Découverte des emails internes via Google Dork (\texttt{filetype:xls "employés"}) et de noms de comptes via les métadonnées d'un PDF public.
-    \item \textbf{Scanning actif} — Cartographie du réseau, détection d'un Apache 2.2.22 non patché (CVE critique) et d'un Windows Server 2012 R2 exposé sur le port 445.
-    \item \textbf{Exploitation} — Injection SQL sur le formulaire de connexion (\texttt{' OR '1'='1' --}) et exploitation EternalBlue (MS17-010) pour obtenir un shell SYSTEM.
-    \item \textbf{Post-exploitation} — Élévation de privilèges via \texttt{sudo vim}, dump des identifiants Mimikatz, Pass-the-Hash vers le Contrôleur de Domaine.
-    \item \textbf{Pivoting} — Traversée de la DMZ vers le LAN interne, compromission totale de l'Active Directory LiZbiZ.
-    \item \textbf{Rapport} — Restitution avec scoring CVSS, fiches de constat, plan de remédiation priorisé.
+    \item \textbf{Reconnaissance \sigle{OSINT}} \hfill \textit{TA0043}\\
+          Découverte passive : 47 emails internes via Google Dork
+          (\texttt{filetype:xls "employés"}), compte \texttt{admin-it}
+          via métadonnées ExifTool, Apache~2.2.22 via Shodan, sous-domaines
+          internes via transfert \sigle{AXFR} et Certificate Transparency logs.
+
+    \item \textbf{Scanning actif et énumération} \hfill \textit{TA0043}\\
+          Cartographie réseau complète : détection Apache~2.2.22 non patché,
+          Windows Server 2012~R2 exposé port~445, \sigle{LDAP} anonymous bind,
+          3 comptes de service avec \sigle{SPN} (cibles Kerberoasting),
+          politique sans verrouillage de compte.
+
+    \item \textbf{Phishing opérationnel} \hfill \textit{T1566.002}\\
+          Campagne GoPhish sur 47 cibles, taux de clic 34\%, 11 credentials
+          capturés dont \texttt{admin-it@lizbiz.com / LiZbiZ2024!}.
+
+    \item \textbf{Exploitation web} \hfill \textit{T1190, T1059.007}\\
+          Injection SQL (\texttt{' OR '1'='1' --}) sur le formulaire de
+          connexion, extraction de 47 comptes. \sigle{XSS} stored sur
+          l'intranet, vol du cookie de session administrateur. \sigle{LFI}
+          + Log Poisoning → shell \texttt{www-data} sur le serveur \sigle{DMZ}.
+
+    \item \textbf{Exploitation système} \hfill \textit{T1210}\\
+          EternalBlue (\sigle{MS17-010}) sur Windows Server 2012~R2 —
+          shell \texttt{NT AUTHORITY\textbackslash{}SYSTEM} obtenu en 28~secondes.
+          Payload \texttt{windows/x64/meterpreter/reverse\_tcp}.
+
+    \item \textbf{Post-exploitation et mouvement latéral} \hfill \textit{T1548, T1003, T1550}\\
+          Escalade \texttt{sudo vim} → \texttt{root} (serveur Linux).
+          Tunnel Chisel \sigle{DMZ} → \sigle{LAN}. Mimikatz
+          \texttt{sekurlsa::logonpasswords} → hash + mot de passe en clair
+          \texttt{admin-it}. Pass-the-Hash vers le Contrôleur de Domaine.
+
+    \item \textbf{Compromission Active Directory} \hfill \textit{T1558.003, T1003.006, T1558.001}\\
+          Kerberoasting → mot de passe \texttt{svc\_backup} cracké (hashcat).
+          DCSync → dump complet du domaine incluant hash \texttt{krbtgt}.
+          Golden Ticket forgé → persistance illimitée sur \texttt{lizbiz.local}.
+
+    \item \textbf{Rapport et remédiation} \hfill \textit{N/A}\\
+          20 fiches de vulnérabilités avec scores \sigle{CVSS v3.1} et
+          références \sigle{MITRE ATT\&CK}. Plan de remédiation priorisé.
+          Débriefing en 3 temps (exécutif, technique, plan d'action).
 \end{enumerate}
 \end{boxresume}
 
@@ -45,29 +94,127 @@ Le scénario LiZbiZ aura illustré, de bout en bout, un cycle d'attaque complet 
 \section*{Compétences Consolidées}
 % ==============================================================================
 
-Ce parcours aura forgé des compétences directement transférables en milieu professionnel :
+Ce parcours a forgé des compétences directement transférables en milieu
+professionnel :
 
 \begin{itemize}
-    \item La \textbf{rigueur méthodologique} (PTES, NIST SP 800-115) qui distingue le professionnel du script-kiddie.
-    \item La \textbf{conscience juridique} — savoir où s'arrête le mandat et où commence le délit.
-    \item La \textbf{capacité de communication} biface : technique pour les équipes \textit{Blue Team}, stratégique pour la direction.
-    \item La \textbf{réflexivité défensive} — comprendre l'attaque pour penser la contre-mesure.
+    \item \textbf{Rigueur méthodologique}, L'application des standards \sigle{PTES},
+          \sigle{NIST SP 800-115} et \sigle{MITRE ATT\&CK} distingue le
+          professionnel du \textit{script-kiddie}. Chaque technique est
+          documentée, horodatée et rattachée à une tactique connue des
+          équipes défensives.
+
+    \item \textbf{Conscience juridique}, Savoir précisément où s'arrête
+          le mandat et où commence le délit, dans les deux juridictions
+          étudiées (France et Cameroun). La chaîne de custody des preuves
+          est une compétence autant juridique que technique.
+
+    \item \textbf{Communication biface}, Rédiger un Executive Summary
+          compréhensible par un \sigle{PDG} et une fiche de vulnérabilité
+          exploitable par un développeur : les deux formats sont aussi
+          importants que les exploits eux-mêmes.
+
+    \item \textbf{Réflexivité défensive}, Comprendre l'attaque pour
+          concevoir la contre-mesure. Pour chaque technique offensive
+          présentée, une contre-mesure défensive a été identifiée :
+          Kerberoasting → mots de passe longs sur les comptes de service ;
+          Golden Ticket → rotation du compte \texttt{krbtgt} ;
+          fileless → Credential Guard, surveillance comportementale.
+
+    \item \textbf{Vision hybride}, L'architecture LiZbiZ (on-premise +
+          cloud) reflète la réalité des \sigle{SI} modernes. Le pentester
+          contemporain doit maîtriser autant les attaques \sigle{AD}
+          classiques que les \sigle{SSRF} vers les endpoints \sigle{IMDS}
+          cloud (169.254.169.254) et les misconfigurations \sigle{IAM}.
+\end{itemize}
+
+% ==============================================================================
+\section*{Les Vecteurs Émergents : Ce que le Cours Ne Couvre Pas Encore}
+% ==============================================================================
+
+La cybersécurité offensive est un domaine en évolution permanente. Plusieurs
+vecteurs, mentionnés en modules optionnels dans ce cours, méritent une
+attention particulière dans la pratique professionnelle de 2025--2026 :
+
+\begin{itemize}
+    \item \textbf{Cloud Security Posture}, Les misconfigurations \sigle{AWS}/Azure/\sigle{GCP}
+          (buckets S3 publics, politiques \sigle{IAM} excessives, \sigle{SSRF}
+          vers l'\sigle{IMDS}) représentent une part croissante des
+          compromissions réelles. Le passage de l'on-premise au cloud
+          ne réduit pas la surface d'attaque, il la déplace.
+
+    \item \textbf{Supply Chain Attacks}, SolarWinds, Log4j, MoveIT ont
+          démontré qu'un seul composant tiers compromis peut propager une
+          attaque à des milliers d'organisations simultanément. L'audit
+          des dépendances logicielles (\sigle{SBOM}) devient une compétence
+          indispensable.
+
+    \item \textbf{Adversarial \sigle{AI}}, L'utilisation de modèles de
+          langage pour automatiser la génération de prétextes de phishing
+          hyper-personnalisés, l'obfuscation de code et la découverte de
+          vulnérabilités logicielles redéfinit les capacités offensives à
+          la portée d'acteurs peu qualifiés.
+
+    \item \textbf{Zero Trust Architecture}, Face à l'évolution des
+          menaces, le modèle périmétrique traditionnel cède la place au
+          \textit{Zero Trust} : \og{}ne jamais faire confiance, toujours
+          vérifier\fg{}. Comprendre ce modèle est indispensable pour
+          concevoir des tests d'intrusion pertinents dans ces
+          environnements.
 \end{itemize}
 
 % ==============================================================================
 \section*{La Complémentarité Audit / Pentest}
 % ==============================================================================
 
-Ce cours clôt une séquence pédagogique commencée avec l'Audit des SI. La complémentarité entre ces deux disciplines est profonde : l'audit évalue la \textit{conception} des contrôles, le pentest évalue leur \textit{résistance} en conditions réelles. L'un sans l'autre est incomplet. C'est précisément cette dualité — évaluer et tester — qui structure la pratique du \sigle{RSSI} contemporain.
+Ce cours clôt une séquence pédagogique commencée avec le Cours d'Audit des
+Systèmes d'Information. La complémentarité entre ces deux disciplines est
+profonde et fondamentale :
+
+\begin{center}
+\begin{tabular}{p{4cm}p{4.5cm}p{4.5cm}}
+\toprule
+\textbf{Dimension} & \textbf{Audit \sigle{SI}} & \textbf{Pentest} \\
+\midrule
+Objet & Conception des contrôles & Résistance des contrôles \\
+Méthode & Revue documentaire & Simulation d'attaque \\
+Posture & Évaluation & Confrontation \\
+Livrable & Rapport de conformité & Rapport de compromission \\
+Question & \og{}Les contrôles existent-ils ?\fg{} & \og{}Les contrôles résistent-ils ?\fg{} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+L'un sans l'autre est incomplet. Un audit sans pentest évalue des contrôles
+dont l'effectivité n'est pas prouvée. Un pentest sans audit préalable manque
+le contexte organisationnel qui donne sens aux vulnérabilités découvertes.
+C'est précisément cette dualité, évaluer et tester, qui structure la
+pratique du \sigle{RSSI} contemporain.
 
 \begin{boxinfo}
 \textbf{Certifications recommandées pour aller plus loin :}
 \begin{itemize}
-    \item \textbf{OSCP} (\textit{Offensive Security Certified Professional}) — la référence mondiale du pentest technique.
-    \item \textbf{CEH} (\textit{Certified Ethical Hacker}, EC-Council) — largement reconnu en entreprise.
-    \item \textbf{GPEN} (GIAC Penetration Tester) — orienté méthodologie et reporting.
-    \item \textbf{CRTO} (\textit{Certified Red Team Operator}) — spécialisé Active Directory et C2.
-    \item \textbf{CISA / CISM} (ISACA) — pour ancrer la compétence offensive dans la gouvernance SI.
+    \item \textbf{\sigle{OSCP}} (\textit{Offensive Security Certified
+          Professional}, Offensive Security), la référence mondiale du
+          pentest technique : examen pratique de 24h, accès non guidé à
+          plusieurs machines.
+    \item \textbf{\sigle{PNPT}} (\textit{Practical Network Penetration
+          Tester}, TCM Security), orienté pentest complet et reporting,
+          accessible aux débutants, reconnu en entreprise.
+    \item \textbf{\sigle{CEH}} (\textit{Certified Ethical Hacker},
+          EC-Council), largement reconnu en entreprise, particulièrement
+          dans les appels d'offres publics africains.
+    \item \textbf{\sigle{GPEN}} (GIAC Penetration Tester, SANS) —
+          orienté méthodologie et reporting, reconnu dans les contrats
+          gouvernementaux.
+    \item \textbf{\sigle{CRTO}} (\textit{Certified Red Team Operator},
+          Zero Point Security), spécialisé Active Directory, infrastructure
+          C2 (Cobalt Strike, Havoc) et \sigle{OPSEC} avancée.
+    \item \textbf{\sigle{CISA} / \sigle{CISM}} (ISACA), pour ancrer
+          la compétence offensive dans la gouvernance \sigle{SI} et la
+          gestion des risques ; particulièrement valorisés dans les
+          organisations publiques et les institutions financières.
 \end{itemize}
 \end{boxinfo}
 
@@ -75,9 +222,22 @@ Ce cours clôt une séquence pédagogique commencée avec l'Audit des SI. La com
 \section*{Mot Final}
 % ==============================================================================
 
-Attaquer pour défendre est une posture intellectuellement exigeante. Elle requiert de comprendre les systèmes en profondeur, d'anticiper les erreurs humaines, de modéliser les comportements adverses — et de tout cela, d'extraire des recommandations utiles, honnêtes et actionnables.
+Attaquer pour défendre est une posture intellectuellement exigeante. Elle
+requiert de comprendre les systèmes en profondeur, d'anticiper les erreurs
+humaines, de modéliser les comportements adverses, et de tout cela,
+d'extraire des recommandations utiles, honnêtes et actionnables.
 
-Le pentester professionnel est, en définitive, un \textbf{avocat du diable au service de la sécurité} : il incarne temporairement l'adversaire pour mieux armer l'organisation contre lui. Cette mission, lorsqu'elle est exercée avec rigueur et intégrité, est l'une des plus utiles que puisse remplir un expert en cybersécurité.
+Ce que ce cours vous a, en dernier lieu, appris à faire, c'est \textbf{lire
+une infrastructure comme un attaquant et l'expliquer comme un défenseur}.
+Cette double lecture est rare. Elle est précieuse. Elle est ce que les
+organisations recherchent dans un \sigle{RSSI} de qualité.
+
+Le pentester professionnel est, en définitive, un \textbf{avocat du diable
+au service de la sécurité} : il incarne temporairement l'adversaire pour
+mieux armer l'organisation contre lui. Cette mission, lorsqu'elle est
+exercée avec rigueur, intégrité et dans le respect des cadres légaux —
+camerounais comme internationaux, est l'une des plus utiles que puisse
+remplir un expert en cybersécurité.
 
 \vspace{2ex}
 \begin{center}
@@ -85,6 +245,8 @@ Le pentester professionnel est, en définitive, un \textbf{avocat du diable au s
     {\small\itshape\color{CouleurPrimaire}
         Rédigé avec la conviction que la maîtrise technique ne prend de sens\\
         que lorsqu'elle est mise au service d'une éthique professionnelle irréprochable.}\\[0.5ex]
-    {\small\bfseries\color{CouleurPrimaire}\auteurcours}\\
-    {\footnotesize\color{CouleurBordInfo}\itshape\institutionprimaire{} --- \anneescolaire}
+    {\small\bfseries\color{CouleurPrimaire}\auteurcours}\\[0.3ex]
+    {\footnotesize\color{CouleurBordInfo}\itshape
+        \institutionprimaire{} --- \anneescolaire}\\[0.8ex]
+    {\color{CouleurAccent}\rule{0.6\linewidth}{1pt}}
 \end{center}
