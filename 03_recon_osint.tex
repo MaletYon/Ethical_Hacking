@@ -1,146 +1,822 @@
 % ==============================================================================
-% Fichier : 03_recon_osint.tex
-% Description : Reconnaissance Passive et OSINT
+% Fichier     : chapitres/03_recon_osint.tex
+% Titre       : Reconnaissance Passive et OSINT
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
 % ==============================================================================
 
 \chapter{Reconnaissance Passive et OSINT}
+\label{chap:osint}
 
-La première règle du hacking est : "Connaître sa cible". Avant de lancer la moindre attaque technique, le hacker éthique collecte un maximum d'informations. Cette phase, appelée \textbf{Reconnaissance Passive}, a l'avantage d'être totalement invisible pour la cible (pas de paquets envoyés directement vers son réseau).
+La première règle du hacking éthique est : \textit{connaître sa cible avant d'agir}.
+Avant de lancer la moindre action technique, le pentester collecte un maximum
+d'informations. Cette phase, appelée \termecle{Reconnaissance Passive}, a
+l'avantage d'être \textbf{totalement invisible} pour la cible, aucun paquet
+n'est envoyé directement vers son réseau. La richesse des informations collectées
+ici conditionne directement la qualité de toutes les phases suivantes.
 
+\begin{boxinfo}
+\textbf{MITRE ATT\&CK, Tactique associée :}
+La reconnaissance passive correspond intégralement à la tactique
+\sigle{TA0043} (\textit{Reconnaissance}), qui regroupe les techniques
+T1591 (\textit{Gather Victim Org Information}), T1596
+(\textit{Search Open Technical Databases}), T1597
+(\textit{Search Closed Sources}) et T1598
+(\textit{Phishing for Information}).
+\end{boxinfo}
+
+% ==============================================================================
 \section{Définition et Objectifs}
-% ------------------------------------------------------------------------------
+\label{sec:osint_def}
+% ==============================================================================
 
-\subsection{OSINT (Open Source Intelligence)}
+\subsection{OSINT (\textit{Open Source Intelligence})}
 
 \begin{boxdef}
-\textbf{OSINT :} Renseignement d'origine sources ouvertes. Il s'agit de collecter, analyser et exploiter des informations disponibles publiquement (Internet, médias, documents publics).
+\textbf{OSINT :} Renseignement d'origine sources ouvertes. Discipline consistant
+à collecter, croiser et analyser des informations disponibles publiquement
+(Internet, médias, registres publics, réseaux sociaux, documents officiels) afin
+de produire du renseignement actionnable sur une cible, sans interaction directe
+avec ses systèmes.
 \end{boxdef}
+
+L'\sigle{OSINT} se distingue du scanning actif (Chapitre~\ref{chap:scanning})
+par l'absence totale de contact réseau avec la cible. Les informations collectées
+proviennent exclusivement de tiers (registraires, moteurs de recherche, réseaux
+sociaux, bases de vulnérabilités). Cette propriété rend la phase indétectable par
+les \sigle{IDS}/\sigle{IPS} et les \sigle{SIEM} de la cible.
 
 \subsection{Objectifs de la Reconnaissance}
 
 \begin{itemize}
-    \item Identifier les \textbf{domaines} et sous-domaines appartenant à la cible.
-    \item Découvrir les \textbf{adresses IP} publiques et les plages réseau.
-    \item Identifier les \textbf{technologies} utilisées (Web Server, CMS, Cloud Provider).
-    \item Trouver des \textbf{adresses email} et des \textbf{noms d'employés} (pour le Phishing ou le Brute Force).
-    \item Découvrir des \textbf{fuites de données} (mots de passe passés, documents internes).
+    \item Identifier les \textbf{domaines et sous-domaines} appartenant à la cible
+          (surface d'attaque externe).
+    \item Découvrir les \textbf{adresses IP publiques} et les plages réseau
+          (\sigle{ASN}, bloc \sigle{CIDR}).
+    \item Identifier les \textbf{technologies} utilisées : serveur web, \sigle{CMS},
+          framework, cloud provider, versions logicielles.
+    \item Trouver des \textbf{adresses email} et des \textbf{noms d'employés}
+          (prérequis pour le phishing simulé, voir
+          Chapitre~\ref{chap:exploit}).
+    \item Cartographier la \textbf{structure organisationnelle} : organigramme,
+          prestataires, partenaires.
+    \item Découvrir des \textbf{fuites de données} : mots de passe exposés,
+          documents internes indexés, dépôts de code publics.
+    \item Identifier les \textbf{vecteurs d'ingénierie sociale} : événements
+          récents, nominations, communiqués de presse.
 \end{itemize}
 
-% ------------------------------------------------------------------------------
-\section{Techniques et Outils de Collecte}
-% ------------------------------------------------------------------------------
+% ==============================================================================
+\section{Collecte d'Infrastructure}
+\label{sec:infra_collect}
+% ==============================================================================
 
-\subsection{Collecte d'Infrastructure}
+\subsection{Whois et Registres de Noms de Domaine}
+\label{subsec:whois}
 
-\subsubsection{Whois et Registres}
-Le protocole Whois permet d'interroger les bases de données des registraires de noms de domaine pour obtenir des informations sur le propriétaire.
+Le protocole \termecle{Whois} interroge les bases de données des registraires
+(\sigle{ICANN}, \sigle{AFNIC}, \sigle{NIC}~Cameroun) pour obtenir des
+informations sur le propriétaire d'un domaine.
 
-\begin{lstlisting}[language=bash, caption=Requete Whois]
+\begin{lstlisting}[language=bash, caption={Requête Whois, informations registraire}]
 whois lizbiz.com
-# Revele : Nom de l'administrateur, contacts techniques, 
-# date de creation, et surtout le fournisseur d'acces (ISP).
+# Revelee : nom de l'administrateur, adresse email de contact,
+# date de creation/expiration, nameservers, fournisseur d'acces (ISP).
+# Astuce : verifier si les infos sont masquees (privacy protection)
+# et consulter les archives WHOIS historiques (DomainTools, ViewDNS)
 \end{lstlisting}
 
-\subsubsection{DNS Enumeration}
-Le DNS (Domain Name System) est l'annuaire du web. Il contient des enregistrements précieux.
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{ll}
-    \toprule
-    \textbf{Type} & \textbf{Information révélée} \\
-    \midrule
-    A & Adresse IPv4 d'un hôte. \\
-    MX & Serveurs de messagerie (Cibles privilégiées pour le phishing). \\
-    TXT & Informations diverses (vérification propriété, SPF). \\
-    NS & Serveurs de noms (DNS Primaire/Secondaire). \\
-    \bottomrule
-\end{tabular}
-\caption{Enregistrements DNS critiques}
-\end{table}
-
-\begin{boxlizbiz}
-\textbf{TP LiZbiZ :} Utilisez l'outil \texttt{dig} ou \texttt{nslookup} pour trouver l'adresse IP du serveur web de LiZbiZ et son serveur de messagerie.
+\begin{boxinfo}
+\textbf{Registres IP régionaux (\sigle{RIR}) :} Pour identifier le propriétaire
+d'une plage d'adresses IP, interroger le \sigle{RIR} compétent selon la région :
+\sigle{ARIN} (Amériques), \sigle{RIPE NCC} (Europe/Moyen-Orient/Asie Centrale),
+\sigle{AFRINIC} (Afrique), \sigle{APNIC} (Asie-Pacifique).
 \begin{lstlisting}[language=bash]
-dig lizbiz.com ANY
+# Interroger AFRINIC pour une IP africaine
+whois -h whois.afrinic.net 196.216.2.1
 \end{lstlisting}
-\end{boxlizbiz}
+\end{boxinfo}
 
-\subsection{Moteurs de Recherche Spécialisés}
+\subsection{Énumération DNS}
+\label{subsec:dns_enum}
 
-\subsubsection{Shodan : Le Moteur de Recherche des Objets Connectés}
-Shodan scanne Internet en permanence et indexe les services (bannières) qu'il trouve.
+Le \sigle{DNS} (\textit{Domain Name System}) est l'annuaire du web et une
+source de renseignement considérable. Chaque type d'enregistrement révèle
+des informations distinctes sur l'infrastructure cible.
 
-\textbf{Recherche typique :}
-\begin{itemize}
-    \item \texttt{hostname:"lizbiz.com"} : Tous les services liés au domaine.
-    \item \texttt{port:3389} : Recherche de bureaux à distance (RDP) exposés.
-    \item \texttt{product:"Apache Tomcat"} : Recherche de versions vulnérables.
-\end{itemize}
-
-\subsubsection{Google Dorks (Google Hacking)}
-Utilisation des opérateurs avancés de Google pour trouver des informations cachées.
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\small
-\begin{tabular}{p{4cm}p{6cm}}
-    \toprule
-    \textbf{Opérateur} & \textbf{Exemple et Usage} \\
-    \midrule
-    \texttt{site:} & \texttt{site:lizbiz.com} (Limiter la recherche au site cible). \\
-    \texttt{filetype:} & \texttt{filetype:pdf "confidentiel"} (Chercher des docs PDF sensibles). \\
-    \texttt{inurl:} & \texttt{inurl:admin} (Chercher des pages d'administration). \\
-    \texttt{intitle:} & \texttt{intitle:"index of /"} (Trouver des répertoires ouverts). \\
-    \texttt{cache:} & Voir une version supprimée d'une page (Cache Google). \\
-    \bottomrule
+\caption{Enregistrements DNS et informations révélées}
+\label{tab:dns_records}
+\begin{tabular}{p{1.8cm}p{4cm}p{7cm}}
+\toprule
+\textbf{Type} & \textbf{Rôle} & \textbf{Intérêt pour le pentest} \\
+\midrule
+\texttt{A}
+    & Adresse IPv4 d'un hôte
+    & IP directe du serveur cible \\
+\addlinespace
+\texttt{AAAA}
+    & Adresse IPv6
+    & Surface IPv6 souvent non filtrée par les pare-feux \\
+\addlinespace
+\texttt{MX}
+    & Serveurs de messagerie
+    & Cibles prioritaires pour le phishing ; révèle l'hébergeur mail \\
+\addlinespace
+\texttt{TXT}
+    & Données textuelles
+    & Enregistrements SPF, DKIM, DMARC (révèle la politique anti-phishing),
+      tokens de vérification (Google, Azure) \\
+\addlinespace
+\texttt{NS}
+    & Serveurs de noms
+    & Hébergeur DNS primaire/secondaire ; cible de transfert de zone \\
+\addlinespace
+\texttt{CNAME}
+    & Alias d'un hôte
+    & Révèle sous-domaines cachés, CDN utilisé (Cloudflare, Fastly) \\
+\addlinespace
+\texttt{SOA}
+    & Autorité de la zone
+    & Email de l'administrateur DNS (souvent non obfusqué) \\
+\addlinespace
+\texttt{PTR}
+    & Résolution inverse (IP → nom)
+    & Révèle des noms internes sur des IP publiques \\
+\bottomrule
 \end{tabular}
-\caption{Opérateurs Google Dorks principaux}
 \end{table}
 
-\begin{boxlizbiz}
-\textbf{Cas LiZbiZ :}
-Un \texttt{Google Dork} révèle un fichier Excel indexé par erreur : \texttt{site:lizbiz.com filetype:xls "employés"}. Ce fichier contient la liste des emails internes, fournissant une base parfaite pour une campagne de Phishing ultérieure.
-\end{boxlizbiz}
+\begin{lstlisting}[language=bash, caption={Énumération DNS complète avec dig}]
+# Enregistrements generaux
+dig lizbiz.com ANY +noall +answer
 
-\subsection{Collecte d'Informations Humaines (Social Engineering Prep)}
+# Enregistrement SOA (email administrateur)
+dig lizbiz.com SOA +short
 
-\subsubsection{LinkedIn Scraping}
-Les réseaux sociaux sont une mine d'or. LinkedIn révèle :
-\begin{itemize}
-    \item Les administrateurs système (cibles privilégiées).
-    \item Les technologies utilisées (ex: "Administrateur Windows Server 2019 chez LiZbiZ").
-    \item La structure hiérarchique.
-\end{itemize}
+# Tentative de transfert de zone (AXFR), cible: serveur NS primaire
+dig axfr @ns1.lizbiz.com lizbiz.com
+# Si le serveur est mal configure, liste TOUS les hotes internes :
+# sous-domaines, adresses internes, services caches.
 
-\subsubsection{theHarvester}
-Outil automatisé pour collecter emails, sous-domaines et noms d'hôtes à partir de multiples sources publiques.
-
-\begin{lstlisting}[language=bash, caption=Utilisation de theHarvester]
-theharvester -d lizbiz.com -l 500 -b google,linkedin
-# -d : domaine
-# -l : limite de resultats
-# -b : source (moteur de recherche)
+# Resolution inverse sur une plage IP
+for i in $(seq 1 10); do dig -x 203.0.113.$i +short; done
 \end{lstlisting}
 
-% ------------------------------------------------------------------------------
-\section{Analyse de Métadonnées}
-% ------------------------------------------------------------------------------
+\begin{boxalert}
+\textbf{Zone Transfer (AXFR) :} Un serveur DNS mal configuré répondant aux
+requêtes AXFR depuis n'importe quelle source révèle l'intégralité de sa zone
+DNS, équivalent d'un annuaire complet de l'infrastructure interne. Cette
+mauvaise pratique, T1590.002 dans MITRE ATT\&CK, reste présente sur de
+nombreux systèmes hérités.
+\end{boxalert}
 
-Les documents publics (PDF, Word, Images) publiés sur le site web contiennent souvent des métadonnées invisibles.
+\begin{boxlizbiz}
+\textbf{TP LiZbiZ, Énumération DNS :}
+\begin{lstlisting}[language=bash]
+# 1. Identifier les nameservers
+dig lizbiz.com NS +short
+
+# 2. Trouver le serveur mail (cible phishing)
+dig lizbiz.com MX +short
+
+# 3. Lire la politique SPF (qualite anti-phishing)
+dig lizbiz.com TXT +short | grep spf
+
+# 4. Tenter le transfert de zone
+dig axfr @ns1.lizbiz.com lizbiz.com
+\end{lstlisting}
+\textbf{Résultat attendu :} Le serveur DNS de lab est volontairement mal
+configuré. Le transfert AXFR révèle \texttt{intranet.lizbiz.com} (192.168.10.50)
+et \texttt{dc01.lizbiz.com} (192.168.10.5).
+\end{boxlizbiz}
+
+\subsection{Énumération de Sous-Domaines}
+\label{subsec:subdomain_enum}
+
+Au-delà du transfert de zone (souvent bloqué), plusieurs techniques passives
+permettent d'identifier les sous-domaines d'une organisation.
+
+\begin{lstlisting}[language=bash, caption={Énumération passive de sous-domaines}]
+# Certificate Transparency Logs (passif, fiable)
+# Tout certificat SSL/TLS emis est journalise publiquement
+curl -s "https://crt.sh/?q=%.lizbiz.com&output=json" | \
+    python3 -c "import sys,json; \
+    [print(e['name_value']) for e in json.load(sys.stdin)]" | \
+    sort -u
+
+# Subfinder (outil specialise, sources multiples)
+subfinder -d lizbiz.com -silent
+
+# Amass (OSINT framework complet)
+amass enum -passive -d lizbiz.com
+\end{lstlisting}
+
+\begin{boxinfo}
+\textbf{Certificate Transparency (\sigle{CT}) :} Depuis 2015, tous les
+certificats \sigle{TLS} émis par les \sigle{CA} publiques sont journalisés
+dans des logs publics (\sigle{RFC}~6962). Le site \texttt{crt.sh} indexe
+ces logs, révélant tous les sous-domaines pour lesquels un certificat a
+été émis, y compris les sous-domaines de staging, dev, et internal souvent
+oubliés par les équipes \sigle{IT}.
+\end{boxinfo}
+
+% ==============================================================================
+\section{Moteurs de Recherche Spécialisés}
+\label{sec:search_engines}
+% ==============================================================================
+
+\subsection{Shodan}
+\label{subsec:shodan}
+
+\termecle{Shodan} scanne Internet en permanence et indexe les bannières
+de services, contrairement aux moteurs classiques qui indexent le contenu
+des pages. C'est le moteur de recherche des systèmes connectés exposés.
+
+\begin{table}[htbp]
+\centering
+\caption{Filtres Shodan avancés pour la reconnaissance}
+\label{tab:shodan_filtres}
+\begin{tabular}{p{4.5cm}p{8cm}}
+\toprule
+\textbf{Filtre} & \textbf{Usage} \\
+\midrule
+\texttt{hostname:"lizbiz.com"}
+    & Tous les services indexés pour ce domaine \\
+\addlinespace
+\texttt{org:"LiZbiZ"}
+    & Services associés à l'organisation \\
+\addlinespace
+\texttt{port:3389}
+    & Bureaux à distance \sigle{RDP} exposés \\
+\addlinespace
+\texttt{port:445 os:"Windows"}
+    & Partages SMB Windows (vecteur EternalBlue) \\
+\addlinespace
+\texttt{product:"Apache" version:"2.2"}
+    & Versions obsolètes d'Apache \\
+\addlinespace
+\texttt{ssl.cert.subject.cn:"lizbiz.com"}
+    & Hosts avec certificat pour ce domaine \\
+\addlinespace
+\texttt{http.title:"LiZbiZ" 200}
+    & Pages avec ce titre retournant HTTP~200 \\
+\addlinespace
+\texttt{vuln:CVE-2017-0144}
+    & Hosts potentiellement vulnérables à EternalBlue \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}[language=bash, caption={Utilisation de l'API Shodan (CLI)}]
+# Installation
+pip install shodan
+
+# Configuration de la cle API
+shodan init <VOTRE_CLE_API>
+
+# Recherche via CLI
+shodan search 'hostname:"lizbiz.com"'
+shodan search 'org:"LiZbiZ" port:22'
+
+# Informations sur une IP specifique
+shodan host 203.0.113.10
+\end{lstlisting}
+
+\begin{boxlizbiz}
+\textbf{Résultat Shodan, LiZbiZ :}
+La recherche \texttt{hostname:"lizbiz.com"} révèle que le serveur web
+(203.0.113.10) expose un service \textbf{Apache~2.2.22} (identifié par
+la bannière HTTP). Cette version, publiée en 2012, est affectée par de
+nombreuses \sigle{CVE} permettant l'exécution de code à distance, ce
+vecteur sera exploité au Chapitre~\ref{chap:exploit}.
+\end{boxlizbiz}
+
+\subsection{Autres Moteurs de Recherche Spécialisés}
+\label{subsec:other_engines}
+
+\begin{table}[htbp]
+\centering
+\caption{Moteurs de recherche spécialisés complémentaires}
+\label{tab:moteurs_speciaux}
+\begin{tabular}{p{2.5cm}p{4cm}p{6.5cm}}
+\toprule
+\textbf{Outil} & \textbf{Spécialité} & \textbf{Usage en reconnaissance} \\
+\midrule
+Censys
+    & Infrastructure Internet
+    & Alternative à Shodan, meilleure couverture IPv6 \\
+\addlinespace
+Fofa
+    & Infrastructure (focus Asie)
+    & Complémentaire pour les actifs hébergés hors USA/Europe \\
+\addlinespace
+GreyNoise
+    & Bruit réseau / scanners
+    & Distinguer les scanners bénins des acteurs malveillants \\
+\addlinespace
+VirusTotal
+    & Réputation fichiers/URLs/IPs
+    & Vérifier si un domaine/IP est connu comme malveillant ;
+      retrouver des URLs / fichiers associés \\
+\addlinespace
+PublicWWW
+    & Recherche dans le code source
+    & Identifier les sites utilisant un framework ou une clé \sigle{API} spécifique \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Google Dorks (\textit{Google Hacking})}
+\label{subsec:google_dorks}
+
+Les opérateurs avancés de Google permettent de cibler précisément des
+informations sensibles indexées involontairement.
+
+\begin{table}[htbp]
+\centering
+\caption{Opérateurs Google Dorks principaux}
+\label{tab:google_dorks}
+\begin{tabular}{p{2.5cm}p{4.5cm}p{6cm}}
+\toprule
+\textbf{Opérateur} & \textbf{Syntaxe} & \textbf{Usage} \\
+\midrule
+\texttt{site:}
+    & \texttt{site:lizbiz.com}
+    & Limiter la recherche au domaine cible \\
+\addlinespace
+\texttt{filetype:}
+    & \texttt{filetype:pdf "confidentiel"}
+    & Chercher des fichiers sensibles indexés \\
+\addlinespace
+\texttt{inurl:}
+    & \texttt{inurl:admin}
+    & Chercher des pages d'administration \\
+\addlinespace
+\texttt{intitle:}
+    & \texttt{intitle:"index of /"}
+    & Trouver des répertoires ouverts (\textit{directory listing}) \\
+\addlinespace
+\texttt{intext:}
+    & \texttt{intext:"mot de passe"}
+    & Chercher un terme dans le corps de la page \\
+\addlinespace
+\texttt{cache:}
+    & \texttt{cache:lizbiz.com/page}
+    & Voir une version mise en cache (page supprimée) \\
+\addlinespace
+\texttt{ext:}
+    & \texttt{ext:env OR ext:config}
+    & Fichiers de configuration exposés \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxinfo}
+\textbf{Combinaisons multi-opérateurs :} La puissance des Dorks réside
+dans la combinaison d'opérateurs. Quelques exemples avancés :
+\begin{lstlisting}[language=bash]
+# Fichiers Excel contenant des emails internes
+site:lizbiz.com filetype:xls "employes"
+
+# Fichiers de configuration exposes
+site:lizbiz.com ext:env OR ext:ini OR ext:config
+
+# Pages de connexion cachees
+site:lizbiz.com inurl:login OR inurl:signin OR inurl:admin
+
+# Documents Word internes indexes par erreur
+site:lizbiz.com filetype:docx "confidentiel" OR "interne"
+
+# Base de donnees Google Hacking (GHDB)
+# Repertoire complet : https://www.exploit-db.com/google-hacking-database
+\end{lstlisting}
+\end{boxinfo}
+
+\begin{boxlizbiz}
+\textbf{Découverte LiZbiZ, Google Dork :}
+La requête \texttt{site:lizbiz.com filetype:xls "employés"} révèle un
+fichier Excel indexé par erreur contenant la liste des adresses email
+internes. Ce fichier sera utilisé comme base de la campagne de phishing
+simulée au Chapitre~\ref{chap:exploit} (Section~\ref{sec:phishing_ops}).
+\end{boxlizbiz}
+
+% ==============================================================================
+\section{Collecte d'Informations Humaines}
+\label{sec:humint}
+% ==============================================================================
+
+\subsection{LinkedIn et Réseaux Sociaux}
+\label{subsec:linkedin}
+
+Les réseaux professionnels sont une source d'informations considérable sur
+la structure interne d'une organisation et ses employés.
+
+\begin{itemize}
+    \item \textbf{Identification des cibles prioritaires :} administrateurs
+          système, \sigle{RSSI}, développeurs, leurs profils révèlent
+          souvent les technologies utilisées.
+    \item \textbf{Technologies internes :}  intitulés de postes du type
+          \og{}Administrateur VMware vSphere chez LiZbiZ\fg{} révèlent
+          la stack technique sans aucune interaction réseau.
+    \item \textbf{Structure hiérarchique :} organigramme reconstruit depuis
+          les profils publics, utile pour cibler les \sigle{VIP} du
+          \sigle{COMEX} dans une attaque de type \textit{spear phishing}.
+    \item \textbf{Événements récents :} fusions, acquisitions, recrutements
+          massifs, départs, chaque événement crée des vecteurs d'ingénierie
+          sociale (ex.~: \og{}votre accès RH a été réinitialisé suite à la
+          fusion\fg{}).
+\end{itemize}
+
+\subsection{theHarvester}
+\label{subsec:theharvester}
+
+Outil automatisé pour collecter emails, sous-domaines, \sigle{IP} et noms
+d'hôtes depuis de multiples sources publiques en une seule commande.
+
+\begin{lstlisting}[language=bash, caption={Collecte multi-sources avec theHarvester}]
+# Sources disponibles : google, bing, linkedin, twitter,
+# shodan, crtsh, dnsdumpster, hackertarget, ...
+theharvester -d lizbiz.com -l 500 -b google,linkedin,crtsh
+
+# Options importantes
+# -d : domaine cible
+# -l : limite de resultats par source
+# -b : sources a interroger
+# -f rapport_osint : exporter le resultat (HTML + XML)
+
+# Version etendue avec sources multiples
+theharvester -d lizbiz.com -b all -f lizbiz_harvest
+\end{lstlisting}
+
+\subsection{Recon-ng}
+\label{subsec:recon_ng}
+
+\termecle{Recon-ng} est un framework \sigle{OSINT} modulaire, comparable à
+Metasploit dans sa philosophie, un workspace par mission, des modules
+installables, et une base de données intégrée pour stocker les résultats.
+
+\begin{lstlisting}[language=bash, caption={Workflow Recon-ng, LiZbiZ}]
+# Lancer le framework
+recon-ng
+
+# Creer un workspace dedie
+workspaces create lizbiz
+
+# Installer et utiliser un module de collecte DNS
+marketplace install recon/domains-hosts/hackertarget
+modules load recon/domains-hosts/hackertarget
+options set SOURCE lizbiz.com
+run
+
+# Installer et utiliser un module de collecte email
+marketplace install recon/domains-contacts/whois_pocs
+modules load recon/domains-contacts/whois_pocs
+options set SOURCE lizbiz.com
+run
+
+# Voir les resultats collectes
+show hosts
+show contacts
+\end{lstlisting}
+
+\subsection{Maltego}
+\label{subsec:maltego}
+
+\termecle{Maltego} est un outil de visualisation des relations entre entités
+\sigle{OSINT}. Il construit des graphes reliant domaines, \sigle{IP}, emails,
+personnes et organisations à partir de transformations automatisées sur des
+sources publiques.
+
+\begin{boxinfo}
+\textbf{Cas d'usage Maltego :} À partir du domaine \texttt{lizbiz.com},
+Maltego peut automatiquement enchaîner : Whois → emails du registraire →
+profils LinkedIn → organigramme → sous-domaines via \sigle{CT} logs →
+services Shodan → CVE associées. Le graphe résultant est exploitable
+directement dans la phase de \textit{Threat Modeling} (PTES Phase~3).
+\end{boxinfo}
+
+% ==============================================================================
+\section{Fuites de Données et Threat Intelligence}
+\label{sec:fuites_threat_intel}
+% ==============================================================================
+
+\subsection{Recherche de Fuites de Credentials}
+\label{subsec:data_leaks}
+
+Les bases de données de fuites passées constituent une source de renseignement
+sous-exploitée. Des mots de passe exposés lors de brèches anciennes sont
+régulièrement réutilisés.
+
+\begin{lstlisting}[language=bash, caption={Recherche de fuites de credentials}]
+# HaveIBeenPwned (API), verifier si un email a ete expose
+curl -s -H "hibp-api-key: VOTRE_CLE" \
+    "https://haveibeenpwned.com/api/v3/breachedaccount/\
+admin@lizbiz.com" | python3 -m json.tool
+
+# DeHashed, recherche par domaine (acces payant)
+# Interface web : https://dehashed.com
+
+# GitHub, recherche de credentials hardcodes dans des depots publics
+# (tokens, mots de passe, cles SSH, cles API)
+site:github.com "lizbiz.com" password OR token OR secret OR key
+\end{lstlisting}
+
+\begin{boxinfo}
+\textbf{Dépôts GitHub exposés :} Il est fréquent que des développeurs
+\textit{pushent} accidentellement des fichiers de configuration contenant
+des credentials réels (tokens \sigle{AWS}, mots de passe de base de données,
+clés \sigle{SSH}). L'outil \termecle{truffleHog} automatise la recherche
+de secrets dans l'historique Git d'un dépôt.
+\begin{lstlisting}[language=bash]
+# Recherche de secrets dans un depot GitHub public
+trufflehog github --org=lizbiz --only-verified
+\end{lstlisting}
+\end{boxinfo}
+
+\subsection{Threat Intelligence Passive}
+\label{subsec:threat_intel}
+
+La Threat Intelligence passive consiste à interroger des bases de réputation
+pour évaluer la posture de sécurité de la cible sans contact direct.
+
+\begin{table}[htbp]
+\centering
+\caption{Sources de Threat Intelligence passive}
+\label{tab:threat_intel}
+\begin{tabular}{p{2.8cm}p{3.5cm}p{7cm}}
+\toprule
+\textbf{Source} & \textbf{Type} & \textbf{Informations obtenues} \\
+\midrule
+VirusTotal
+    & Réputation \sigle{IP}/Domaine
+    & Historique de détections, sous-domaines, \sigle{DNS} passif \\
+\addlinespace
+Recorded Future
+    & \sigle{CTI} commerciale
+    & Mentions dans des forums underground, \sigle{IOC} liés \\
+\addlinespace
+PassiveTotal (RiskIQ)
+    & \sigle{DNS} passif
+    & Historique des résolutions \sigle{DNS} et changements d'hébergeur \\
+\addlinespace
+MISP
+    & Partage de \sigle{IOC}
+    & Indicateurs de compromission partagés par la communauté \\
+\addlinespace
+Pastebin / Ghostbin
+    & Dumps publics
+    & Données exfiltrées publiées par des attaquants \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================================
+\section{Analyse de Métadonnées}
+\label{sec:metadata}
+% ==============================================================================
+
+Les documents publics (PDF, Word, images, binaires) publiés sur le site web
+contiennent souvent des \termecle{métadonnées} invisibles à l'œil nu mais
+exploitables par un attaquant.
+
+\begin{boxdef}
+\textbf{Métadonnées :} Informations structurées décrivant un fichier sans
+faire partie de son contenu visible, auteur, logiciel de création, date
+de modification, chemin du fichier source, coordonnées \sigle{GPS}
+(images mobiles), nom d'utilisateur Windows (documents Office).
+\end{boxdef}
 
 \subsection{ExifTool}
-\begin{boxdef}
-\textbf{Métadonnées :} Données cachées dans un fichier (Auteur, Logiciel utilisé, Date de création, Chemin du fichier source).
-\end{boxdef}
+\label{subsec:exiftool}
+
+\termecle{ExifTool} est l'outil de référence pour l'extraction de métadonnées
+sur tout type de fichier (images, \sigle{PDF}, documents Office, vidéos).
+
+\begin{lstlisting}[language=bash, caption={Extraction de métadonnées avec ExifTool}]
+# Analyse d'un PDF
+exiftool rapport_lizbiz.pdf
+# Peut reveler : "Creator: Microsoft Word 2016", "Author: Admin-IT",
+# "Company: LiZbiZ", "Template: C:\Users\admin-it\AppData\Roaming\..."
+
+# Analyse d'une image (coordonnees GPS, appareil photo)
+exiftool photo_evenement.jpg | grep -E "GPS|Camera|Author|Software"
+
+# Analyse en lot de tous les fichiers telecharges
+exiftool -r -csv /tmp/lizbiz_docs/ > metadata_report.csv
+
+# Extraction uniquement des metadonnees sensibles
+exiftool -Author -Creator -Company -UserComment rapport_lizbiz.pdf
+\end{lstlisting}
 
 \begin{boxlizbiz}
 \textbf{Analyse LiZbiZ :}
-Téléchargez le document "Rapport Annuel LiZbiZ.pdf". Utilisez \texttt{exiftool} pour l'analyser.
+L'analyse ExifTool du fichier \texttt{rapport\_annuel\_lizbiz.pdf} révèle :
 \begin{lstlisting}[language=bash]
-exiftool rapport_lizbiz.pdf
-# Resultat : "Creator Tool: Microsoft Word 2016", 
-# "Author: Admin-IT". 
-# Indice : Le compte "Admin-IT" existe probablement.
+exiftool rapport_annuel_lizbiz.pdf
+# Creator Tool : Microsoft Word 2016
+# Author        : Admin-IT
+# Company       : LiZbiZ SARL
+# Last Modified By : Admin-IT
+# Template      : C:\Users\admin-it\Documents\templates\rapport.dotx
 \end{lstlisting}
+\textbf{Exploitation :} Le compte Windows \texttt{admin-it} existe
+probablement sur l'intranet. Le chemin de template révèle la version de
+Windows et la structure des répertoires utilisateur.
 \end{boxlizbiz}
+
+\subsection{FOCA (\textit{Fingerprinting Organizations with Collected Archives})}
+\label{subsec:foca}
+
+\termecle{FOCA} est un outil Windows spécialisé dans l'extraction massive
+de métadonnées depuis des documents publics. Il automatise :
+\begin{itemize}
+    \item la collecte de documents indexés via Google/Bing pour un domaine cible ;
+    \item l'extraction et la consolidation des métadonnées ;
+    \item la reconstruction d'une cartographie des utilisateurs, logiciels
+          et chemins réseau internes.
+\end{itemize}
+
+\subsection{Recherche de Secrets dans les Binaires}
+\label{subsec:strings}
+
+Des exécutables ou bibliothèques publiés (applications mobiles, installateurs)
+peuvent contenir des informations sensibles en clair.
+
+\begin{lstlisting}[language=bash, caption={Extraction de chaînes dans les binaires}]
+# Extraction des chaines imprimables (longueur minimale : 8 caracteres)
+strings -n 8 application_lizbiz.apk | grep -E "password|api_key|token|secret"
+
+# Analyse approfondie avec binwalk (firmware, archives imbriquees)
+binwalk --extract application_lizbiz.apk
+
+# Grep dans les fichiers extraits
+grep -r "password\|api_key\|jdbc:" /tmp/binwalk_output/
+\end{lstlisting}
+
+% ==============================================================================
+\section{Synthèse : Tableau de Bord OSINT LiZbiZ}
+\label{sec:synthese_osint}
+% ==============================================================================
+
+À l'issue de la phase de reconnaissance passive, le pentester dispose d'une
+carte complète de la surface d'attaque externe. Le tableau ci-dessous récapitule
+les éléments collectés sur LiZbiZ et leur exploitation dans les phases suivantes.
+
+\begin{table}[htbp]
+\centering
+\caption{Tableau de bord OSINT, résultats de la phase de reconnaissance LiZbiZ}
+\label{tab:synthese_osint}
+\begin{tabular}{p{3cm}p{4cm}p{5.5cm}p{2cm}}
+\toprule
+\textbf{Technique} & \textbf{Information collectée} & \textbf{Exploitation prévue} & \textbf{Chapitre} \\
+\midrule
+Whois
+    & Hébergeur : OVH, admin@lizbiz.com
+    & Cible phishing
+    & Chap.~\ref{chap:exploit} \\
+\addlinespace
+DNS AXFR
+    & intranet (192.168.10.50), dc01 (192.168.10.5)
+    & Scanning ciblé
+    & Chap.~\ref{chap:scanning} \\
+\addlinespace
+CT Logs
+    & dev.lizbiz.com, staging.lizbiz.com
+    & Périmètre élargi
+    & Chap.~\ref{chap:scanning} \\
+\addlinespace
+Shodan
+    & Apache 2.2.22 sur 203.0.113.10
+    & Exploitation CVE
+    & Chap.~\ref{chap:exploit} \\
+\addlinespace
+Google Dorks
+    & \texttt{employes.xls} avec 47 emails
+    & Campagne phishing
+    & Chap.~\ref{chap:exploit} \\
+\addlinespace
+LinkedIn
+    & Admin-IT, stack VMware + AD 2019
+    & Spear phishing ciblé
+    & Chap.~\ref{chap:exploit} \\
+\addlinespace
+theHarvester
+    & 47 emails @lizbiz.com
+    & Base campagne phishing
+    & Chap.~\ref{chap:exploit} \\
+\addlinespace
+ExifTool
+    & Compte Windows \texttt{admin-it}
+    & Brute force / phishing
+    & Chap.~\ref{chap:exploit} \\
+\addlinespace
+HIBP
+    & 3 emails exposés dans breaches
+    & Password reuse attack
+    & Chap.~\ref{chap:postexploit} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{Bilan de la phase OSINT LiZbiZ :}
+
+Sans envoyer un seul paquet vers l'infrastructure de LiZbiZ, nous avons
+constitué un dossier de renseignement complet :
+\begin{enumerate}
+    \item \textbf{Surface d'attaque externe :} 2 IP publiques, 5 sous-domaines,
+          un serveur Apache~2.2.22 vulnérable.
+    \item \textbf{Infrastructure interne :} noms et IP du contrôleur de domaine
+          et de l'intranet (via AXFR).
+    \item \textbf{Ressources humaines :} 47 adresses email, nom du compte
+          administrateur (\texttt{admin-it}), stack technologique.
+    \item \textbf{Vecteur phishing prêt :} liste d'emails + contenu crédible
+          construit depuis les actualités LinkedIn et documents publics.
+\end{enumerate}
+La phase de scanning actif (Chapitre~\ref{chap:scanning}) confirmera et
+enrichira ces données. La liste d'emails sera utilisée au
+Chapitre~\ref{chap:exploit} pour la campagne GoPhish simulée.
+\end{boxlizbiz}
+
+% ==============================================================================
+\section*{Points Clés à Retenir}
+% ==============================================================================
+
+\begin{boxinfo}
+\textbf{Ce qu'il faut retenir de ce chapitre :}
+\begin{enumerate}
+    \item La reconnaissance passive est \textbf{indétectable} : aucun paquet
+          vers la cible.
+    \item Le \textbf{DNS} est un réservoir d'informations : AXFR, enregistrements
+          \sigle{SOA} et \sigle{MX} révèlent hébergeurs et adresses internes.
+    \item Les \textbf{CT Logs} exposent systématiquement tous les sous-domaines
+          certifiés, y compris les environnements de test.
+    \item \textbf{Shodan} révèle les versions logicielles et \sigle{CVE}
+          applicables avant tout contact avec la cible.
+    \item Les \textbf{métadonnées} de documents publics révèlent noms de comptes,
+          systèmes et structures de répertoires internes.
+    \item Les \textbf{fuites de credentials} passées sont un vecteur d'attaque
+          sous-estimé : les mots de passe sont fréquemment réutilisés.
+    \item La valeur de l'\sigle{OSINT} se réalise dans la \textbf{corrélation}
+          des informations, pas dans leur collecte isolée.
+\end{enumerate}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Exercices Pratiques}
+% ==============================================================================
+
+\begin{boxexo}
+\textbf{Exercice 3.1, Audit OSINT complet sur un domaine de test}
+
+\medskip
+\textbf{Cible autorisée :} \texttt{testphp.vulnweb.com}
+(domaine de démonstration Acunetix, tests légaux autorisés).
+
+\medskip
+\textbf{Tâches :}
+\begin{enumerate}
+    \item Effectuer une requête Whois et identifier le registraire et l'hébergeur.
+    \item Énumérer les enregistrements DNS (A, MX, TXT, NS) avec \texttt{dig}.
+    \item Tenter un transfert de zone AXFR.
+    \item Identifier les sous-domaines via \texttt{crt.sh}.
+    \item Rechercher l'IP sur Shodan et Censys, noter les services exposés.
+    \item Lancer \texttt{theharvester} avec les sources \texttt{google} et
+          \texttt{crtsh}.
+    \item Télécharger un document PDF du site et analyser ses métadonnées
+          avec ExifTool.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable :} Rapport OSINT d'une page : surface d'attaque identifiée,
+3 vecteurs d'exploitation potentiels, hashes SHA-256 des preuves collectées.
+\end{boxexo}
+
+\begin{boxexo}
+\textbf{Exercice 3.2, Construction du profil phishing LiZbiZ}
+
+\medskip
+\textbf{Objectif :} À partir des résultats de l'exercice~3.1 appliqués au
+lab LiZbiZ, préparer la base de la campagne de phishing du
+Chapitre~\ref{chap:exploit}.
+
+\medskip
+\textbf{Tâches :}
+\begin{enumerate}
+    \item Collecter les emails \texttt{@lizbiz.com} via theHarvester
+          et Google Dorks.
+    \item Identifier 3 employés LinkedIn avec leurs fonctions et la stack
+          technologique associée.
+    \item Rédiger un \textbf{prétexte de phishing crédible} (5 lignes) basé
+          sur les informations collectées (ex.~: mise à jour de l'intranet,
+          réinitialisation de mot de passe).
+    \item Lister les éléments d'authentification à inclure pour rendre
+          l'email convaincant.
+\end{enumerate}
+
+\medskip
+\textbf{Note éthique :} Ce prétexte sera utilisé uniquement dans le
+laboratoire isolé au Chapitre~\ref{chap:exploit}. Il ne doit en aucun cas
+être dirigé vers des personnes réelles.
+\end{boxexo}
