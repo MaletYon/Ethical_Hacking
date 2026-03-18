@@ -1,136 +1,555 @@
 % ==============================================================================
-% Fichier : 08_reporting.tex
-% Description : Rédaction du Rapport de Pentest et Remédiation
+% Fichier     : chapitres/08_reporting.tex
+% Titre       : Rédaction du Rapport de Pentest et Remédiation
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
+
 % ==============================================================================
 
 \chapter{Rédaction du Rapport de Pentest et Remédiation}
+\label{chap:reporting}
 
-La phase technique est terminée. La valeur ajoutée d'un Pentester ne réside pas dans le nombre de machines compromises, mais dans la qualité du rapport final. Ce document doit être compréhensible à la fois par les équipes techniques (pour corriger) et par la direction (pour arbitrer les budgets).
+La phase technique est terminée. La \textbf{valeur ajoutée d'un pentester}
+ne réside pas dans le nombre de machines compromises, mais dans la qualité
+du rapport final. Ce document doit être compréhensible à la fois par les
+équipes techniques (pour corriger) et par la direction (pour arbitrer les
+budgets de sécurité). Un rapport de qualité professionnelle transforme des
+\sigle{PoC} techniques en décisions d'investissement.
 
+% ==============================================================================
 \section{Structure du Rapport de Pentest}
-% ------------------------------------------------------------------------------
+\label{sec:rapport_structure}
+% ==============================================================================
 
-Le rapport suit généralement une structure standard inspirée du PTES (Post-Exploitation Reporting).
+Le rapport suit une structure standardisée inspirée du \sigle{PTES}
+(\textit{Reporting Phase}) et adaptée aux attentes des clients
+professionnels. Il se compose de deux parties distinctes destinées à des
+audiences différentes.
 
-\subsection{1. Synthèse Exécutive (Executive Summary)}
+\subsection{Synthèse Exécutive (\textit{Executive Summary})}
+\label{subsec:exec_summary}
 
-Cette section est destinée aux décideurs (PDG, DSI, RSSI). Elle tient souvent sur 1 à 2 pages.
+La synthèse exécutive est destinée aux \textbf{décideurs} : \sigle{PDG},
+\sigle{DSI}, \sigle{RSSI}, Conseil d'Administration. Elle doit tenir sur
+1 à 2 pages maximum et ne contenir aucun jargon technique.
 
+\begin{boxlizbiz}
+\textbf{Template Executive Summary, LiZbiZ :}
+
+\medskip
+\textbf{Contexte et périmètre}
+
+Du [DATE] au [DATE], le cabinet [NOM] a réalisé un test d'intrusion
+de type \textit{Gray Box} sur l'infrastructure de LiZbiZ, conformément
+au mandat signé le [DATE]. Le périmètre couvrait 8 systèmes incluant les
+serveurs web, le portail employé, l'Active Directory et les extensions
+cloud.
+
+\medskip
+\textbf{Résultats globaux}
+
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Criticité} & \textbf{Nombre de vulnérabilités} \\
+\midrule
+Critique (CVSS 9.0--10.0) & 3 \\
+Élevé (CVSS 7.0--8.9)     & 5 \\
+Moyen (CVSS 4.0--6.9)     & 8 \\
+Faible (CVSS 0.1--3.9)    & 4 \\
+\midrule
+\textbf{Total}             & \textbf{20} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{Constats majeurs}
+
+L'infrastructure de LiZbiZ présente des vulnérabilités critiques permettant
+à un attaquant externe d'obtenir le contrôle total du domaine Active Directory
+en moins de 4~heures, sans exploiter de vulnérabilité de type \textit{zero-day}.
+Les vecteurs principaux sont : un serveur web non mis à jour exposé sur Internet,
+une vulnérabilité critique non patchée sur le service SMB Windows, et une
+politique de mots de passe insuffisante sur les comptes de service.
+
+\medskip
+\textbf{Recommandations prioritaires}
+\begin{enumerate}
+    \item Appliquer immédiatement le patch \sigle{MS17-010} sur tous les
+          serveurs Windows.
+    \item Mettre à jour Apache~2.2.22 vers une version supportée (2.4.x+).
+    \item Renforcer la politique de mots de passe des comptes de service
+          (20 caractères minimum, rotation trimestrielle).
+\end{enumerate}
+\end{boxlizbiz}
+
+\subsection{Méthodologie et Périmètre}
+\label{subsec:methodologie_rapport}
+
+Cette section détaille l'approche technique pour les équipes \sigle{IT} :
 \begin{itemize}
-    \item \textbf{Contexte :} Rappel du périmètre et des dates.
-    \item \textbf{Statistiques :} Nombre de failles critiques, élevées, moyennes.
-    \item \textbf{Synthèse des risques majeurs :} "L'infrastructure est vulnérable à des attaques Ransomware en raison d'un manque de mises à jour critiques."
-    \item \textbf{Recommandations globales :} Plan d'action stratégique (ex: "Priorité absolue à la mise à jour de l'Active Directory").
+    \item \textbf{Type de test :} Gray Box, compte \og{}stagiaire\fg{}
+          fourni pour l'intranet.
+    \item \textbf{Méthodologie :} PTES (\textit{Penetration Testing Execution
+          Standard}), avec mapping \sigle{MITRE ATT\&CK} pour chaque
+          technique employée.
+    \item \textbf{Outils utilisés :} Nmap, Metasploit, SQLMap, BloodHound,
+          Mimikatz, Chisel, GoPhish.
+    \item \textbf{Périmètre testé :} Liste précise des \sigle{IP} et \sigle{URL}
+          testées (référencer l'Annexe~A, tableau des cibles).
+    \item \textbf{Périmètre exclu :} Actions DoS, COMEX, systèmes de paiement.
 \end{itemize}
 
-\subsection{2. Méthodologie et Périmètre}
+\subsection{Résultats Techniques (\textit{Findings})}
+\label{subsec:findings}
 
-Description technique de l'approche (Black Box, Gray Box), outils utilisés (Nmap, Metasploit, etc.), et liste précise des cibles testées (Adresses IP, URLs).
+C'est le cœur du rapport. Chaque vulnérabilité découverte fait l'objet
+d'une fiche détaillée standardisée.
 
-\subsection{3. Résultats Techniques (Findings)}
+% ==============================================================================
+\section{Le Score CVSS v3.1}
+\label{sec:cvss}
+% ==============================================================================
 
-C'est le cœur du rapport. Chaque vulnérabilité découverte doit faire l'objet d'une fiche détaillée.
+\begin{boxdef}
+\textbf{CVSS v3.1} (\textit{Common Vulnerability Scoring System}, version~3.1,
+publiée par le \sigle{FIRST} en 2019) : standard international de notation
+de la gravité des vulnérabilités, de~0 (aucune) à~10 (critique). Le score
+est calculé à partir de trois groupes de métriques : \textbf{Base},
+\textbf{Temporal} et \textbf{Environmental}.
+\end{boxdef}
 
-\begin{enumerate}
-    \item \textbf{Titre de la vulnérabilité.}
-    \item \textbf{Score CVSS :} Indicateur de gravité (0 à 10).
-    \item \textbf{Description :} Explication technique de la faille.
-    \item \textbf{Preuve de concept (PoC) :} Captures d'écran, commandes utilisées, pour prouver que la faille est réelle.
-    \item \textbf{Impact Business :} Conséquences pour LiZbiZ (Vol de données, arrêt de l'activité, amende RGPD).
-    \item \textbf{Recommandations :} Comment corriger la faille (patch, configuration, code).
-\end{enumerate}
-
-% ------------------------------------------------------------------------------
-\section{Calcul de la Gravité : Le Score CVSS}
-% ------------------------------------------------------------------------------
-
-Le \textbf{CVSS (Common Vulnerability Scoring System)} est le standard pour noter la gravité des failles.
-
-\subsection{Échelle de Gravité}
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\begin{tabular}{ll}
-    \toprule
-    \textbf{Score} & \textbf{Niveau} \\
-    \midrule
-    0.0 & Information \\
-    0.1 - 3.9 & Faible (Low) \\
-    4.0 - 6.9 & Moyen (Medium) \\
-    7.0 - 8.9 & Élevé (High) \\
-    9.0 - 10.0 & Critique (Critical) \\
-    \bottomrule
+\caption{Échelle de criticité CVSS v3.1}
+\label{tab:cvss_scale}
+\begin{tabular}{lll}
+\toprule
+\textbf{Score} & \textbf{Criticité} & \textbf{Action recommandée} \\
+\midrule
+0.0         & Informatif & Aucune urgence \\
+0.1 -- 3.9  & Faible     & Traitement lors de la prochaine maintenance \\
+4.0 -- 6.9  & Moyen      & Traitement sous 3 mois \\
+7.0 -- 8.9  & Élevé      & Traitement sous 1 mois \\
+9.0 -- 10.0 & Critique   & Traitement immédiat (sous 72h) \\
+\bottomrule
 \end{tabular}
-\caption{Échelle CVSS}
 \end{table}
 
-\subsection{Critères d'évaluation}
+\subsection{Métriques de Base CVSS v3.1}
+\label{subsec:cvss_metrics}
 
-Le score dépend de plusieurs métriques :
-\begin{itemize}
-    \item \textbf{Vecteur d'attaque (AV) :} Réseau (Remote) ou Local (Local) ?
-    \item \textbf{Complexité (AC) :} Facile à exploiter (Low) ou difficile (High) ?
-    \item \textbf{Privilèges requis (PR) :} Besoin d'un compte admin ou rien (None) ?
-    \item \textbf{Impact (C/I/A) :} Impact sur la Confidentialité, Intégrité, Disponibilité.
-\end{itemize}
-
-% ------------------------------------------------------------------------------
-\section{Exemple de Fiche de Vulnerabilité (Cas LiZbiZ)}
-% ------------------------------------------------------------------------------
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\small
-\begin{tabular}{|p{3cm}|p{10cm}|}
-    \hline
-    \textbf{Titre} & Injection SQL sur le formulaire de recherche \\
-    \hline
-    \textbf{Sévérité} & \textcolor{red}{\textbf{CRITIQUE (9.8)}} \\
-    \hline
-    \textbf{Cible} & http://www.lizbiz.com/search.php \\
-    \hline
-    \textbf{Description} & Le paramètre 'id' de la requête POST n'est pas filtré. Un attaquant peut injecter du code SQL arbitraire pour lire ou modifier la base de données. \\
-    \hline
-    \textbf{Preuve (PoC)} & Capture d'écran montrant l'extraction de la table 'users' via SQLMap. \\
-    \hline
-    \textbf{Impact} & Vol de tous les clients (RGPD), prise de contrôle du serveur web. \\
-    \hline
-    \textbf{Recommandation} & Utiliser des requêtes préparées (Prepared Statements) dans le code PHP. Ne jamais faire confiance aux entrées utilisateur. \\
-    \hline
+\caption{Métriques Base CVSS v3.1 et leurs valeurs}
+\label{tab:cvss_metrics}
+\begin{tabular}{p{4cm}p{4cm}p{5.5cm}}
+\toprule
+\textbf{Métrique} & \textbf{Valeurs} & \textbf{Signification} \\
+\midrule
+Attack Vector (\sigle{AV})
+    & Network / Adjacent / Local / Physical
+    & Comment l'attaquant accède au système \\
+\addlinespace
+Attack Complexity (\sigle{AC})
+    & Low / High
+    & Conditions nécessaires à l'exploitation \\
+\addlinespace
+Privileges Required (\sigle{PR})
+    & None / Low / High
+    & Niveau de privilèges requis \\
+\addlinespace
+User Interaction (\sigle{UI})
+    & None / Required
+    & Interaction utilisateur nécessaire \\
+\addlinespace
+Scope (\sigle{S})
+    & Unchanged / Changed
+    & Impact au-delà du composant vulnérable \\
+\addlinespace
+Confidentiality (\sigle{C})
+    & None / Low / High
+    & Impact sur la confidentialité \\
+\addlinespace
+Integrity (\sigle{I})
+    & None / Low / High
+    & Impact sur l'intégrité \\
+\addlinespace
+Availability (\sigle{A})
+    & None / Low / High
+    & Impact sur la disponibilité \\
+\bottomrule
 \end{tabular}
-\caption{Exemple de fiche de constat technique}
 \end{table}
 
-% ------------------------------------------------------------------------------
-\section{Remédiation et Plan d'Action}
-% ------------------------------------------------------------------------------
+\begin{boxinfo}
+\textbf{CVSS v4.0, Évolution (novembre 2023) :}
+La version~4.0 introduit quatre groupes de métriques : \textit{Base}
+(inchangé), \textit{Threat} (exploitabilité réelle, remplace Temporal),
+\textit{Environmental} (contexte spécifique de l'organisation) et
+\textit{Supplemental} (informations additionnelles non scorées).
+Elle distingue également les scores \og{}CVSS-B\fg{} (Base),
+\og{}CVSS-BT\fg{} (Base+Threat) et \og{}CVSS-BE\fg{} (Base+Environmental).
+Les rapports professionnels de 2024+ doivent préciser la version utilisée.
+Ce cours utilise \textbf{CVSS v3.1} comme référence principale.
+\end{boxinfo}
 
-Le rapport ne se contente pas de lister les problèmes, il propose des solutions.
+% ==============================================================================
+\section{Modèle de Fiche de Vulnérabilité}
+\label{sec:fiche_vuln}
+% ==============================================================================
 
-\subsection{Priorisation}
+Chaque \textit{finding} doit suivre un format standardisé permettant une
+lecture rapide par les équipes techniques et une priorisation claire par
+la direction.
 
-Il est impossible de tout corriger en même temps. Le plan d'action doit suivre la logique du risque :
-\begin{enumerate}
-    \item \textbf{Critique :} Traitement immédiat (ex: serveur exposé à Internet sans mot de passe).
-    \item \textbf{Élevé :} Traitement sous 1 mois.
-    \item \textbf{Moyen/Faible :} Traitement lors de la prochaine mise à jour planifiée.
-\end{enumerate}
+\begin{table}[htbp]
+\centering
+\caption{Fiche de constat technique, Injection SQL (LiZbiZ)}
+\label{tab:fiche_sqli}
+\begin{tabular}{p{3.5cm}p{10cm}}
+\toprule
+\textbf{Champ} & \textbf{Valeur} \\
+\midrule
+Titre
+    & Injection SQL sur le formulaire de recherche \\
+\addlinespace
+Référence
+    & FINDING-001 \\
+\addlinespace
+Sévérité
+    & \textbf{CRITIQUE} \\
+\addlinespace
+Score CVSS v3.1
+    & \textbf{9.8}, AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H \\
+\addlinespace
+CVE associée
+    & N/A (vulnérabilité custom), CWE-89 (\textit{SQL Injection}) \\
+\addlinespace
+MITRE ATT\&CK
+    & T1190 (\textit{Exploit Public-Facing Application}) \\
+\addlinespace
+Cible
+    & \texttt{http://203.0.113.10/search.php} \\
+\addlinespace
+Description
+    & Le paramètre \texttt{id} de la requête POST n'est pas filtré.
+      Un attaquant peut injecter du code SQL arbitraire pour lire ou
+      modifier la base de données sans authentification. \\
+\addlinespace
+Preuve (\sigle{PoC})
+    & Capture d'écran (Annexe~B-001) montrant l'extraction de la table
+      \texttt{users} via SQLMap. Hash SHA-256 de la preuve :
+      \texttt{3a7f8d...} \\
+\addlinespace
+Impact business
+    & Vol de l'intégralité des données clients (47 enregistrements
+      dont données personnelles), exposition \sigle{RGPD}, amende
+      potentielle jusqu'à 4\% du CA annuel. \\
+\addlinespace
+Recommandation
+    & Utiliser des requêtes préparées (\textit{Prepared Statements})
+      dans le code PHP. Implémenter un \sigle{WAF} en couche de
+      compensation. Ne jamais concaténer les entrées utilisateur dans
+      les requêtes SQL. \\
+\addlinespace
+Correction vs compensation
+    & \textbf{Correction} : Prepared Statements (délai estimé : 2j).
+      \textbf{Compensation} : Règle WAF bloquant les patterns SQLi. \\
+\addlinespace
+Référence
+    & OWASP Top~10 2021, A03:2021 (Injection),
+      OWASP Testing Guide v4.2 \S4.7.5. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Fiche de constat technique, EternalBlue MS17-010}
+\label{tab:fiche_eternal}
+\begin{tabular}{p{3.5cm}p{10cm}}
+\toprule
+\textbf{Champ} & \textbf{Valeur} \\
+\midrule
+Titre
+    & Absence de patch MS17-010 (EternalBlue) \\
+\addlinespace
+Référence
+    & FINDING-002 \\
+\addlinespace
+Sévérité
+    & \textbf{CRITIQUE} \\
+\addlinespace
+Score CVSS v3.1
+    & \textbf{9.8}, AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H \\
+\addlinespace
+CVE associée
+    & CVE-2017-0144 \\
+\addlinespace
+MITRE ATT\&CK
+    & T1210 (\textit{Exploitation of Remote Services}),
+      T1569.002 (\textit{Service Execution}) \\
+\addlinespace
+Cible
+    & 192.168.10.20 (Windows Server 2012 R2) \\
+\addlinespace
+Description
+    & Vulnérabilité de débordement de tampon dans SMBv1 permettant
+      l'exécution de code arbitraire à distance sans authentification.
+      Patch disponible depuis mars 2017 (MS17-010). \\
+\addlinespace
+Preuve (\sigle{PoC})
+    & Capture d'écran (Annexe~B-002) : shell SYSTEM obtenu en 28
+      secondes. Output de \texttt{getuid} : \texttt{NT AUTHORITY\textbackslash{}SYSTEM}.
+      Hash SHA-256 : \texttt{8b2c4f...} \\
+\addlinespace
+Impact business
+    & Contrôle total du serveur Windows, accès aux données RH,
+      possibilité de ransomware, point de pivot vers l'AD. \\
+\addlinespace
+Recommandation
+    & Appliquer immédiatement le patch MS17-010. Désactiver SMBv1
+      sur tous les systèmes (sauf nécessité opérationnelle documentée).
+      Segmenter le réseau pour isoler les serveurs Windows. \\
+\addlinespace
+Correction vs compensation
+    & \textbf{Correction} : Patch MS17-010 (délai : 24h).
+      \textbf{Compensation} : Bloquer le port 445 au niveau du
+      pare-feu interne. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================================
+\section{Plan de Remédiation et Priorisation}
+\label{sec:remediation}
+% ==============================================================================
+
+\subsection{Matrice de Priorisation}
+\label{subsec:priorisation}
+
+Le plan de remédiation doit être actionnable et priorisé selon le risque
+réel, non selon la complexité technique de la correction.
+
+\begin{table}[htbp]
+\centering
+\caption{Plan de remédiation LiZbiZ, priorisé par criticité et effort}
+\label{tab:plan_remediation}
+\begin{tabular}{p{0.4cm}p{3.5cm}p{1.5cm}p{2cm}p{4.5cm}}
+\toprule
+\textbf{\#} & \textbf{Vulnérabilité} & \textbf{CVSS} & \textbf{Délai} & \textbf{Action corrective} \\
+\midrule
+1 & MS17-010 EternalBlue
+    & 9.8 Critique
+    & 24h
+    & Patch MS17-010, désactiver SMBv1 \\
+\addlinespace
+2 & Injection SQL / login
+    & 9.8 Critique
+    & 2j
+    & Prepared Statements + WAF \\
+\addlinespace
+3 & Apache 2.2.22 (RCE)
+    & 9.8 Critique
+    & 48h
+    & Mise à jour vers Apache 2.4.x \\
+\addlinespace
+4 & Phishing (taux 34\%)
+    & 8.1 Élevé
+    & 1 mois
+    & Sensibilisation + MFA \\
+\addlinespace
+5 & LDAP anonymous bind
+    & 7.5 Élevé
+    & 1 mois
+    & Désactiver l'accès anonyme LDAP \\
+\addlinespace
+6 & Politique mdp comptes service
+    & 7.2 Élevé
+    & 1 mois
+    & 20 chars min + rotation 90j \\
+\addlinespace
+7 & Répertoire /backup/ exposé
+    & 6.5 Moyen
+    & 3 mois
+    & Restriction d'accès + .htaccess \\
+\addlinespace
+8 & XSS stored intranet
+    & 6.1 Moyen
+    & 3 mois
+    & Encodage sorties HTML + CSP \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Correction vs Compensation}
+\label{subsec:correction_compensation}
 
-\begin{itemize}
-    \item \textbf{Correction :} Supprimer la faille à la source (ex: mettre à jour le logiciel).
-    \item \textbf{Compensation (Mitigation) :} Si la mise à jour est impossible, ajouter une barrière (ex: bloquer le port au pare-feu, ajouter une authentification forte).
-\end{itemize}
+\begin{boxdef}
+\textbf{Correction :} Suppression de la faille à la source, mise à jour
+du logiciel, correction du code, reconfiguration.
 
-% ------------------------------------------------------------------------------
+\textbf{Compensation (Mitigation) :} Barrière ajoutée en couche de
+protection lorsque la correction directe est impossible ou trop longue
+— règle de pare-feu, \sigle{WAF}, désactivation du service.
+La compensation ne supprime pas la vulnérabilité : elle réduit la
+surface d'exposition dans l'attente de la correction définitive.
+\end{boxdef}
+
+% ==============================================================================
 \section{Livrable Final et Débriefing}
-% ------------------------------------------------------------------------------
+\label{sec:livrable_debrief}
+% ==============================================================================
 
-La mission se conclut par une réunion de restitution (Debrief).
+\subsection{Structure des Livrables}
+\label{subsec:livrables_finaux}
 
-\begin{itemize}
-    \item Présentation orale des résultats.
-    \item Remise du rapport PDF signé.
-    \item Transmission des preuves (dans un format sécurisé) pour que l'équipe technique puisse reproduire les tests.
-\end{itemize}
+\begin{table}[htbp]
+\centering
+\caption{Livrables finaux de la mission LiZbiZ}
+\label{tab:livrables_finaux}
+\begin{tabular}{p{3.5cm}p{2.5cm}p{7cm}}
+\toprule
+\textbf{Livrable} & \textbf{Format} & \textbf{Contenu} \\
+\midrule
+Rapport Exécutif
+    & PDF (5--10 pages)
+    & Synthèse, tableau de criticité, 3 recommandations prioritaires \\
+\addlinespace
+Rapport Technique
+    & PDF (20--40 pages)
+    & Méthodologie, 20 fiches de vulnérabilités, mapping MITRE,
+      plan de remédiation priorisé \\
+\addlinespace
+Annexe A, Périmètre
+    & PDF
+    & Liste complète des cibles testées avec adresses IP et URLs \\
+\addlinespace
+Annexe B, Preuves
+    & ZIP chiffré
+    & Captures d'écran horodatées + hashes \sigle{SHA-256},
+      fichiers flags, logs de sessions \\
+\addlinespace
+Scripts \sigle{PoC}
+    & ZIP chiffré
+    & Exploits utilisés, scripts personnalisés, instructions de
+      reproduction \\
+\addlinespace
+Présentation Débriefing
+    & \sigle{PPTX}/\sigle{PDF}
+    & Support 15 slides pour la réunion de restitution \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxinfo}
+\textbf{Chaîne de custody des livrables :} Chaque fichier de preuve
+doit être accompagné de son hash \sigle{SHA-256} calculé immédiatement
+après capture (Section~\ref{sec:preuves}). L'archive ZIP contenant les
+preuves doit être chiffrée (\sigle{AES-256}) et transmise de façon
+sécurisée (canal chiffré, jamais par email non chiffré).
+
+\begin{lstlisting}[language=bash]
+# Créer l'archive chiffrée des preuves
+zip -e -r preuves_lizbiz_YYYYMMDD.zip ./preuves/
+# Ou avec gpg (symétrique)
+tar czf - ./preuves/ | gpg -c --cipher-algo AES256 \
+    -o preuves_lizbiz_YYYYMMDD.tar.gz.gpg
+
+# Calculer le hash de l'archive finale
+sha256sum preuves_lizbiz_YYYYMMDD.tar.gz.gpg >> livraison_manifest.txt
+\end{lstlisting}
+\end{boxinfo}
+
+\subsection{La Réunion de Débriefing}
+\label{subsec:debrief}
+
+La mission se conclut par une \textbf{réunion de restitution} structurée
+en trois temps :
+
+\begin{enumerate}
+    \item \textbf{Présentation exécutive} (30~min) : synthèse des risques
+          majeurs pour la direction, sans jargon technique. Utiliser
+          des analogies métier pour expliquer l'impact (ex.~:
+          \og{}EternalBlue permettrait à un ransomware de chiffrer tous
+          vos serveurs Windows en moins de 10~minutes\fg{}).
+    \item \textbf{Revue technique} (60~min) : démonstration des \sigle{PoC}
+          avec les équipes \sigle{IT}/\sigle{SOC}. Chaque finding est
+          présenté avec sa preuve, son score \sigle{CVSS} et la
+          contre-mesure recommandée.
+    \item \textbf{Plan d'action} (30~min) : validation collective du
+          planning de remédiation et désignation des propriétaires de
+          chaque action corrective.
+\end{enumerate}
+
+\begin{boxalert}
+\textbf{Transmission sécurisée du rapport :} Le rapport de pentest contient
+des informations hautement sensibles sur les vulnérabilités du client.
+Il ne doit \textbf{jamais} être transmis par email non chiffré. Utiliser
+un canal chiffré \sigle{E2E} ou une plateforme de partage sécurisée
+(\sigle{SFTP}, portail chiffré). Le rapport doit être supprimé des
+systèmes du prestataire à l'issue de la mission selon les termes du
+contrat de confidentialité.
+\end{boxalert}
+
+% ==============================================================================
+\section*{Points Clés à Retenir}
+% ==============================================================================
+
+\begin{boxinfo}
+\textbf{Ce qu'il faut retenir de ce chapitre :}
+\begin{enumerate}
+    \item Le rapport est le \textbf{produit final} du pentest, un
+          excellent rapport sur des résultats modestes vaut mieux qu'un
+          mauvais rapport sur des résultats brillants.
+    \item L'\textbf{Executive Summary} ne doit contenir aucun jargon
+          technique, il s'adresse aux décideurs, pas aux ingénieurs.
+    \item Chaque fiche de vulnérabilité doit inclure \textbf{CVE/CWE,
+          CVSS v3.1 avec vecteur complet, référence MITRE ATT\&CK,
+          PoC avec hash SHA-256, impact business, et recommandation}.
+    \item La distinction \textbf{Correction vs Compensation} est
+          fondamentale, elle donne de la flexibilité au client sur
+          le délai de remédiation.
+    \item Les livrables doivent être \textbf{chiffrés et signés} avant
+          transmission, le rapport expose toutes les failles du client.
+    \item \textbf{CVSS v3.1} est la version de référence du cours ;
+          CVSS v4.0 (nov.~2023) sera progressivement adopté, toujours
+          préciser la version dans le rapport.
+\end{enumerate}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Exercice Pratique}
+% ==============================================================================
+
+\begin{boxexo}
+\textbf{Exercice 8.1, Rédaction d'un rapport de pentest LiZbiZ}
+
+\medskip
+\textbf{Objectif :} Produire un rapport de pentest professionnel complet
+sur la base des résultats des exercices précédents.
+
+\medskip
+\textbf{Tâches :}
+\begin{enumerate}
+    \item Rédiger une \textbf{synthèse exécutive} d'une page (tableau de
+          criticité + 3 recommandations prioritaires en langage non technique).
+    \item Compléter \textbf{5 fiches de vulnérabilités} au format
+          Tableau~\ref{tab:fiche_sqli}, incluant :
+          CVE/CWE, score \sigle{CVSS v3.1} avec vecteur complet,
+          référence MITRE ATT\&CK, capture d'écran \sigle{PoC} avec
+          hash \sigle{SHA-256}, impact business, recommandation
+          correction + compensation.
+    \item Établir le \textbf{plan de remédiation priorisé} au format
+          Tableau~\ref{tab:plan_remediation}.
+    \item Créer l'archive chiffrée des preuves et calculer son
+          hash SHA-256.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable :} Rapport PDF complet (10--15 pages) + archive ZIP
+chiffrée des preuves. Le rapport sera évalué sur la clarté de
+l'Executive Summary, la complétude des fiches et la précision des
+scores CVSS.
+\end{boxexo}
